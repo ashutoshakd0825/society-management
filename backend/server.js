@@ -1,3 +1,4 @@
+console.log("DATABASE_URL:", process.env.DATABASE_URL);
 require('dotenv').config(); // ✅ Keep this at the very top
 const express = require("express");
 const cors = require("cors");
@@ -11,7 +12,7 @@ app.use(express.json());
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
+  ssl: { 
     rejectUnauthorized: false // Render ke liye required hota hai
   }
 });
@@ -98,3 +99,4 @@ app.delete("/api/:type/:id", async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
