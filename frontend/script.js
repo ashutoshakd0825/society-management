@@ -270,24 +270,60 @@ $('#receiptForm').addEventListener('submit', async (e)=>{
 function openPrintReceipt(r) {
   const win = window.open('', '_blank');
   const html = `
-    <html><head><title>Receipt ${r.receiptid || r.receiptId}</title></head>
-    <body>
-      <h2>${society.name}</h2>
-      <div>${society.address}</div>
-      <h3>Maintenance Receipt</h3>
-      <p><b>Receipt ID:</b> ${r.receiptid || r.receiptId}</p>
-      <p><b>Date:</b> ${r.date}</p>
-      <p><b>Flat No:</b> ${r.flatno || r.flatNo}</p>
-      <p><b>Owner:</b> ${r.name}</p>
-      <p><b>Month:</b> ${r.month}</p>
-      <p><b>Mode:</b> ${r.mode}</p>
-      <p><b>Txn ID:</b> ${r.txnid || r.txnId}</p>
-      <p><b>Amount:</b> ${fmtINR(r.amount)}</p>
-      <button onclick="window.print()">Print</button>
-    </body></html>`;
+    <html>
+      <head>
+        <title>Receipt ${r.receiptid || r.receiptId}</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            text-align: center;
+          }
+          h2 {
+            margin-bottom: 5px;
+            font-size: 24px;
+          }
+          .address {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 30px;
+          }
+          h3 {
+            margin-bottom: 20px;
+            text-decoration: underline;
+          }
+          p {
+            font-size: 16px;
+            margin: 5px 0;
+          }
+          button {
+            margin-top: 30px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+          }
+        </style>
+      </head>
+      <body>
+        <h2>${society.name}</h2>
+        <div class="address">${society.address}</div>
+        <h3>Maintenance Receipt</h3>
+        <p><b>Receipt ID:</b> ${r.receiptid || r.receiptId}</p>
+        <p><b>Date:</b> ${r.date}</p>
+        <p><b>Flat No:</b> ${r.flatno || r.flatNo}</p>
+        <p><b>Owner:</b> ${r.name}</p>
+        <p><b>Month:</b> ${r.month}</p>
+        <p><b>Mode:</b> ${r.mode}</p>
+        <p><b>Txn ID:</b> ${r.txnid || r.txnId}</p>
+        <p><b>Amount:</b> ${fmtINR(r.amount)}</p>
+        <button onclick="window.print()">Print</button>
+      </body>
+    </html>
+  `;
   win.document.write(html);
   win.document.close();
 }
+
 
 // ===== Announcements =====
 async function renderAnnouncements() {
@@ -337,5 +373,6 @@ async function renderAll() {
   $('#year').textContent = new Date().getFullYear();
   renderAll();
 })();
+
 
 
