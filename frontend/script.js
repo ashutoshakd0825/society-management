@@ -1,5 +1,5 @@
 // ===== Backend API URL =====
-const API_URL = "https://society-management-etd8.onrender.com"; 
+const API_URL = "https://society-management-etd8.onrender.com/api"; 
 // 👆 yahan apna Render backend ka URL daalo
 
 // ===== Utility =====
@@ -337,4 +337,5 @@ async function renderAll() {
   $('#year').textContent = new Date().getFullYear();
   renderAll();
 })();
+
 
