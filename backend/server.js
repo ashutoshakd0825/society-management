@@ -8,11 +8,11 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
-// ===== PostgreSQL Connection =====
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
+  ssl: { rejectUnauthorized: false }   // Render ke DB ke liye required
 });
+
 
 // ===== Create Tables if not exist =====
 async function initDB() {
@@ -96,3 +96,4 @@ app.delete("/api/:type/:id", async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
