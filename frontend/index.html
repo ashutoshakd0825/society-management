@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mangla Landmark — Society Maintenance Portal</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo">🏢</div>
+      <div>
+        <h1>Mangla Landmark</h1>
+        <p class="muted">Plot No 7, Karol Bagh Rd, Kalyan Sampat Orchid, Bharwsala, Indore, MP - 453555</p>
+      </div>
+    </div>
+    <div class="auth">
+      <span id="roleBadge" class="badge">Guest</span>
+      <button id="loginBtn" class="btn">Login</button>
+      <button id="logoutBtn" class="btn btn-outline hidden">Logout</button>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button class="tab active" data-tab="about">About</button>
+    <button class="tab" data-tab="owners">Flat Owners</button>
+    <button class="tab" data-tab="expenses">Expenses</button>
+    <button class="tab" data-tab="receipts">Maintenance Receipts</button>
+    <button class="tab" data-tab="announcements">Announcements</button>
+  </nav>
+
+  <main class="content">
+    <!-- About -->
+    <section id="about" class="tab-panel active">
+      <div class="card">
+        <h2>About the Society</h2>
+        <p><strong>Name:</strong> Mangla Landmark</p>
+        <p><strong>Address:</strong> Plot No 7, Karol Bagh Rd, Kalyan Sampat Orchid, Bharwsala, Indore, MP - 453555</p>
+        <p>This portal helps our society maintain records for flat owners, track monthly maintenance receipts, log expenses (salary, fuel, miscellaneous), and share announcements. <br>
+        Admin can log in using the default credentials to manage all data. Residents can view information without logging in.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3>Quick Stats</h3>
+          <div class="stats">
+            <div><span id="statFlats" class="stat-number">0</span><span class="stat-label">Registered Flats</span></div>
+            <div><span id="statReceipts" class="stat-number">0</span><span class="stat-label">Receipts</span></div>
+            <div><span id="statExpenses" class="stat-number">₹0</span><span class="stat-label">Total Expenses</span></div>
+          </div>
+        </div>
+        <div class="card">
+          <h3>Admin Tools</h3>
+          <p class="muted">Only visible to Admin.</p>
+          <div class="admin-only">
+            <button id="exportBtn" class="btn">Export All Data (JSON)</button>
+            <label class="file">
+              <input type="file" id="importFile" accept="application/json"/>
+              <span class="btn btn-outline">Import Data</span>
+            </label>
+            <button id="resetDemoBtn" class="btn btn-danger btn-ghost">Load Demo Data</button>
+            <button id="clearAllBtn" class="btn btn-danger">Clear All Data</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Flat Owners -->
+    <section id="owners" class="tab-panel">
+      <div class="card">
+        <div class="flex-between">
+          <h2>Flat Owner Details</h2>
+          <input id="ownerSearch" class="input" placeholder="Search by Flat No / Name / Contact"/>
+        </div>
+        <div class="admin-only mt-2">
+          <form id="ownerForm" class="grid-6">
+            <input required class="input" name="flatNo" placeholder="Flat No (e.g., A-101)"/>
+            <input required class="input" name="name" placeholder="Owner Name"/>
+            <input required class="input" name="contact" placeholder="Contact"/>
+            <input required class="input" name="sqft" placeholder="Total Sq Ft" type="number" min="0"/>
+            <input required class="input" name="parking" placeholder="Parking No"/>
+            <button class="btn" type="submit">Add / Update</button>
+          </form>
+        </div>
+        <div class="table-wrap">
+          <table id="ownerTable">
+            <thead>
+              <tr>
+                <th>Flat No</th><th>Name</th><th>Contact</th><th>Total Sq Ft</th><th>Parking No</th><th class="admin-only">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Expenses -->
+    <section id="expenses" class="tab-panel">
+      <div class="card">
+        <div class="flex-between">
+          <h2>Expenses</h2>
+          <div class="filters">
+            <select id="expenseMonth" class="input"></select>
+            <select id="expenseYear" class="input"></select>
+          </div>
+        </div>
+        <div class="admin-only mt-2">
+          <form id="expenseForm" class="grid-5">
+            <select class="input" name="category" required>
+              <option value="Salary">Salary</option>
+              <option value="Fuel">Fuel</option>
+              <option value="Miscellaneous">Miscellaneous</option>
+            </select>
+            <input class="input" name="amount" type="number" min="0" placeholder="Amount" required/>
+            <input class="input" name="date" type="date" required/>
+            <input class="input" name="note" placeholder="Note (optional)"/>
+            <button class="btn" type="submit">Add Expense</button>
+          </form>
+        </div>
+        <div class="table-wrap">
+          <table id="expenseTable">
+            <thead>
+              <tr><th>Date</th><th>Category</th><th>Note</th><th>Amount (₹)</th><th class="admin-only">Actions</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="totals">
+          <div><strong>Salary:</strong> <span id="totalSalary">₹0</span></div>
+          <div><strong>Fuel:</strong> <span id="totalFuel">₹0</span></div>
+          <div><strong>Misc:</strong> <span id="totalMisc">₹0</span></div>
+          <div><strong>All Expenses:</strong> <span id="totalExpenses">₹0</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Maintenance Receipts -->
+    <section id="receipts" class="tab-panel">
+      <div class="card">
+        <div class="flex-between">
+          <h2>Maintenance Receipts</h2>
+          <input id="receiptSearch" class="input" placeholder="Search by Flat No / Name / Txn ID"/>
+        </div>
+        <div class="admin-only mt-2">
+          <form id="receiptForm" class="grid-6">
+            <input class="input" name="flatNo" placeholder="Flat No" required/>
+            <input class="input" name="name" placeholder="Owner Name" required/>
+            <input class="input" name="month" placeholder="Month (e.g., Sep-2025)" required/>
+            <input class="input" name="amount" type="number" min="0" placeholder="Amount (₹)" required/>
+            <select class="input" name="mode" required>
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Card">Card</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Cheque">Cheque</option>
+            </select>
+            <input class="input" name="txnId" placeholder="Txn / Ref No" required/>
+            <button class="btn" type="submit">Add Receipt</button>
+          </form>
+        </div>
+
+        <div class="table-wrap">
+          <table id="receiptTable">
+            <thead>
+              <tr>
+                <th>Receipt ID</th><th>Date</th><th>Flat No</th><th>Name</th><th>Month</th><th>Mode</th><th>Txn ID</th><th>Amount (₹)</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Announcements -->
+    <section id="announcements" class="tab-panel">
+      <div class="card">
+        <div class="flex-between">
+          <h2>Announcements</h2>
+          <div class="admin-only mt-2">
+            <form id="announceForm" class="grid-3">
+              <input class="input" name="title" placeholder="Title" required/>
+              <input class="input" name="date" type="date" required/>
+              <button class="btn" type="submit">Post</button>
+            </form>
+          </div>
+        </div>
+        <div id="announceList" class="announcements"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Login Modal -->
+  <dialog id="loginModal" class="modal">
+    <form method="dialog" id="loginForm" class="modal-card">
+      <h3>Admin Login</h3>
+      <label>Username
+        <input class="input" id="username" placeholder="admin" required/>
+      </label>
+      <label>Password
+        <input class="input" id="password" type="password" placeholder="admin" required/>
+      </label>
+      <div class="modal-actions">
+        <button class="btn" id="loginSubmit">Login</button>
+        <button class="btn btn-outline" value="cancel">Cancel</button>
+      </div>
+      <p class="muted">Default credentials: <strong>admin / admin</strong>. For demo use only.</p>
+    </form>
+  </dialog>
+
+  <footer class="app-footer">
+    <p>© <span id="year"></span> Mangla Landmark. Built for free deployment on GitHub Pages, Vercel, or Render (static).</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
