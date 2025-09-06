@@ -8,10 +8,16 @@ const PORT = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
 
+require('dotenv').config();
+const { Pool } = require('pg');
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }   // Render ke DB ke liye required
+  ssl: {
+    rejectUnauthorized: false // Render ke liye required hota hai
+  }
 });
+
 
 
 // ===== Create Tables if not exist =====
@@ -96,4 +102,5 @@ app.delete("/api/:type/:id", async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
 
