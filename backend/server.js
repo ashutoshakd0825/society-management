@@ -1,21 +1,21 @@
-console.log("DATABASE_URL:", process.env.DATABASE_URL);
-require('dotenv').config(); // ✅ Keep this at the very top
 const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg"); // ✅ Only once
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000; // ✅ Correct for Render
 
 app.use(cors());
 app.use(express.json());
 
+// ✅ Hardcoded DB connection string (temporary fix for Render)
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { 
-    rejectUnauthorized: false // Render ke liye required hota hai
+  connectionString: "postgresql://mangla_landmark_db_user:JmRg71RdnCpKHnRMK7mvADnucUbhAW9Z@dpg-d2tcj17diees7384j7mg-a/mangla_landmark_db",
+  ssl: {
+    rejectUnauthorized: false // ✅ Required for Render
   }
 });
+
 
 // ===== Create Tables if not exist =====
 async function initDB() {
@@ -99,4 +99,5 @@ app.delete("/api/:type/:id", async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+
 
