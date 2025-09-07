@@ -85,6 +85,7 @@ async function renderOwners() {
         <td>${o.flatno || o.flatNo}</td>
         <td>${o.name}</td>
         <td>${o.contact}</td>
+        <td>${o.email || ''}</td>         <!-- Add this line -->
         <td>${o.sqft}</td>
         <td>${o.parking}</td>
         <td class="admin-only">
@@ -432,6 +433,7 @@ async function renderAll() {
   $('#year').textContent = new Date().getFullYear();
   renderAll();
 })();
+
 
 
 
