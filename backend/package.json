@@ -1,4 +1,3 @@
-
 {
   "name": "society-backend",
   "version": "1.0.0",
@@ -18,4 +17,5 @@
     "puppeteer": "^24.19.0"
   }
 }
+
 
