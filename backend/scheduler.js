@@ -173,7 +173,7 @@ cron.schedule("1 0 1 * *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
 // ✅ Uncomment below to test manually
 // sendMonthlyReceipts();
 
-cron.schedule("* * * * *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
+//cron.schedule("* * * * *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
 
 // For testing manually:
 sendMonthlyReceipts();
@@ -185,4 +185,4 @@ sendMonthlyReceipts();
 // sendMonthlyReceipts();
 
 //cron.schedule("20 14 7 9 *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
-//cron.schedule("0 9 15 * *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
+cron.schedule("0 9 15 * *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
