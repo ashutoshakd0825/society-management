@@ -1,17 +1,11 @@
 // ===== Backend API URL =====
-const API_URL = "https://society-management-etd8.onrender.com/api"; 
+//const API_URL = "http://localhost:5000/api";
 // 👆 yahan apna Render backend ka URL daalo
-
+const API_URL = "https://society-management-etd8.onrender.com/api"; 
 // ===== Utility =====
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
 const fmtINR = n => '₹' + (Number(n||0)).toLocaleString('en-IN');
-
-function uid(prefix='R'){
-  const t = Date.now().toString(36);
-  const r = Math.floor(Math.random()*1e6).toString(36);
-  return prefix + '-' + t + r;
-}
 
 // ===== API Helpers =====
 async function readRemote(type) {
@@ -203,6 +197,31 @@ $('#expenseForm').addEventListener('submit', async (e)=>{
 });
 
 // ===== Receipts =====
+
+// New function for global serial receipt ID
+async function generateReceiptId() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  const datePart = `${yyyy}${mm}${dd}`;
+
+  const data = await readRemote("receipts");
+
+  // find max serial so far
+  let maxSerial = 0;
+  data.forEach(r => {
+    const id = r.receiptid || r.receiptId || "";
+    const serial = id.slice(-3); // last 3 digits
+    if (!isNaN(serial)) {
+      maxSerial = Math.max(maxSerial, parseInt(serial, 10));
+    }
+  });
+
+  const sn = String(maxSerial + 1).padStart(3, '0');
+  return `RCPT-${datePart}${sn}`;
+}
+
 async function renderReceipts() {
   const q = $('#receiptSearch').value.trim().toLowerCase();
   const data = await readRemote("receipts");
@@ -252,8 +271,9 @@ $('#receiptSearch').addEventListener('input', renderReceipts);
 $('#receiptForm').addEventListener('submit', async (e)=>{
   e.preventDefault();
   const f = e.target;
+  const receiptId = await generateReceiptId();
   const item = {
-    receiptId: uid('RCPT'),
+    receiptId,
     date: new Date().toISOString().slice(0,10),
     flatNo: f.flatNo.value.trim(),
     name: f.name.value.trim(),
@@ -275,55 +295,93 @@ function openPrintReceipt(r) {
         <title>Receipt ${r.receiptid || r.receiptId}</title>
         <style>
           body {
-            font-family: Arial, sans-serif;
+            font-family: 'Inter', Arial, sans-serif;
+            background: #f9fafb;
             padding: 20px;
-            text-align: center;
           }
-          h2 {
-            margin-bottom: 5px;
-            font-size: 24px;
+          .receipt-box {
+            max-width: 750px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            background: #fff;
+            color: #111827;
           }
-          .address {
-            font-size: 14px;
-            color: #555;
-            margin-bottom: 30px;
+          .header { text-align:center; margin-bottom:20px; }
+          .header h2 { margin:0; font-size:24px; font-weight:700; }
+          .header p { margin:4px 0; font-size:14px; color:#6b7280; }
+          .header h3 { margin-top:8px; font-size:16px; font-weight:600; }
+
+          .details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px 40px;
+            margin: 15px 0;
           }
-          h3 {
-            margin-bottom: 20px;
-            text-decoration: underline;
+          .details .label { font-weight:600; }
+          .details .row { font-size:14px; }
+
+          .box-msg {
+            border:1px dashed #94a3b8;
+            padding:8px;
+            margin-top:12px;
+            border-radius:8px;
+            font-size:14px;
+            text-align:center;
           }
-          p {
-            font-size: 16px;
-            margin: 5px 0;
+          .footer {
+            margin-top:14px;
+            text-align:center;
+            font-size:12px;
+            color:#6b7280;
           }
           button {
-            margin-top: 30px;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
+            margin-top:16px;
+            padding:6px 12px;
+            border-radius:8px;
+            border:1px solid #d1d5db;
+            background:#f9fafb;
+            cursor:pointer;
           }
         </style>
       </head>
       <body>
-        <h2>${society.name}</h2>
-        <div class="address">${society.address}</div>
-        <h3>Maintenance Receipt</h3>
-        <p><b>Receipt ID:</b> ${r.receiptid || r.receiptId}</p>
-        <p><b>Date:</b> ${r.date}</p>
-        <p><b>Flat No:</b> ${r.flatno || r.flatNo}</p>
-        <p><b>Owner:</b> ${r.name}</p>
-        <p><b>Month:</b> ${r.month}</p>
-        <p><b>Mode:</b> ${r.mode}</p>
-        <p><b>Txn ID:</b> ${r.txnid || r.txnId}</p>
-        <p><b>Amount:</b> ${fmtINR(r.amount)}</p>
-        <button onclick="window.print()">Print</button>
+        <div class="receipt-box">
+          <div class="header">
+            <h2>${society.name}</h2>
+            <p>${society.address}</p>
+            <h3>Maintenance Receipt</h3>
+          </div>
+
+          <div class="details">
+            <div class="row"><span class="label">Receipt ID:</span> ${r.receiptid || r.receiptId}</div>
+            <div class="row"><span class="label">Date:</span> ${r.date}</div>
+
+            <div class="row"><span class="label">Flat No:</span> ${r.flatno || r.flatNo}</div>
+            <div class="row"><span class="label">Owner:</span> ${r.name}</div>
+
+            <div class="row"><span class="label">Month:</span> ${r.month}</div>
+            <div class="row"><span class="label">Mode:</span> ${r.mode}</div>
+
+            <div class="row"><span class="label">Txn / Ref:</span> ${r.txnid || r.txnId}</div>
+            <div class="row"><span class="label">Amount:</span> ${fmtINR(r.amount)}</div>
+          </div>
+
+          <div class="box-msg">Received with thanks towards monthly maintenance.</div>
+
+          <div class="footer">
+            This is a system generated receipt. No signature required.
+          </div>
+
+          <button onclick="window.print()">Print / Save PDF</button>
+        </div>
       </body>
     </html>
   `;
   win.document.write(html);
   win.document.close();
 }
-
 
 // ===== Announcements =====
 async function renderAnnouncements() {
