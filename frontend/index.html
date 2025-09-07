@@ -70,34 +70,41 @@
     </section>
 
     <!-- Flat Owners -->
-    <section id="owners" class="tab-panel">
-      <div class="card">
-        <div class="flex-between">
-          <h2>Flat Owner Details</h2>
-          <input id="ownerSearch" class="input" placeholder="Search by Flat No / Name / Contact"/>
-        </div>
-        <div class="admin-only mt-2">
-          <form id="ownerForm" class="grid-6">
-            <input required class="input" name="flatNo" placeholder="Flat No (e.g., A-101)"/>
-            <input required class="input" name="name" placeholder="Owner Name"/>
-            <input required class="input" name="contact" placeholder="Contact"/>
-            <input required class="input" name="sqft" placeholder="Total Sq Ft" type="number" min="0"/>
-            <input required class="input" name="parking" placeholder="Parking No"/>
-            <button class="btn" type="submit">Add / Update</button>
-          </form>
-        </div>
-        <div class="table-wrap">
-          <table id="ownerTable">
-            <thead>
-              <tr>
-                <th>Flat No</th><th>Name</th><th>Contact</th><th>Total Sq Ft</th><th>Parking No</th><th class="admin-only">Actions</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+<section id="owners" class="tab-panel">
+  <div class="card">
+    <div class="flex-between">
+      <h2>Flat Owner Details</h2>
+      <input id="ownerSearch" class="input" placeholder="Search by Flat No / Name / Contact"/>
+    </div>
+    <div class="admin-only mt-2">
+      <form id="ownerForm" class="grid-6">
+        <input required class="input" name="flatNo" placeholder="Flat No (e.g., A-101)"/>
+        <input required class="input" name="name" placeholder="Owner Name"/>
+        <input required class="input" name="contact" placeholder="Contact"/>
+        <input required class="input" name="email" placeholder="Email"/> <!-- ✅ ADDED EMAIL FIELD -->
+        <input required class="input" name="sqft" placeholder="Total Sq Ft" type="number" min="0"/>
+        <input required class="input" name="parking" placeholder="Parking No"/>
+        <button class="btn" type="submit">Add / Update</button>
+      </form>
+    </div>
+    <div class="table-wrap">
+      <table id="ownerTable">
+        <thead>
+          <tr>
+            <th>Flat No</th>
+            <th>Name</th>
+            <th>Contact</th>
+            <th>Email</th> <!-- ✅ ADDED EMAIL COLUMN -->
+            <th>Total Sq Ft</th>
+            <th>Parking No</th>
+            <th class="admin-only">Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
 
     <!-- Expenses -->
     <section id="expenses" class="tab-panel">
@@ -140,41 +147,74 @@
     </section>
   <!-- Maintenance Receipts -->
     <section id="receipts" class="tab-panel">
-      <div class="card">
-        <div class="flex-between">
-          <h2>Maintenance Receipts</h2>
-          <input id="receiptSearch" class="input" placeholder="Search by Flat No / Name / Txn ID"/>
-        </div>
-        <div class="admin-only mt-2">
-          <form id="receiptForm" class="grid-6">
-            <input class="input" name="flatNo" placeholder="Flat No" required/>
-            <input class="input" name="name" placeholder="Owner Name" required/>
-            <input class="input" name="month" placeholder="Month (e.g., Sep-2025)" required/>
-            <input class="input" name="amount" type="number" min="0" placeholder="Amount (₹)" required/>
-            <select class="input" name="mode" required>
-              <option value="Cash">Cash</option>
-              <option value="UPI">UPI</option>
-              <option value="Card">Card</option>
-              <option value="Bank Transfer">Bank Transfer</option>
-              <option value="Cheque">Cheque</option>
-            </select>
-            <input class="input" name="txnId" placeholder="Txn / Ref No" required/>
-            <button class="btn" type="submit">Add Receipt</button>
-          </form>
-        </div>
+  <div class="card">
+    <div class="flex-between">
+      <h2>Maintenance Receipts</h2>
+      <input id="receiptSearch" class="input" placeholder="Search by Flat No / Name / Txn ID"/>
+    </div>
+    
+    <!-- Form for Adding New Receipts -->
+    <div class="admin-only mt-2">
+      <form id="receiptForm" class="grid-6">
+        <input class="input" name="flatNo" placeholder="Flat No" required/>
+        <input class="input" name="name" placeholder="Owner Name" required/>
+        <input class="input" name="month" placeholder="Month (e.g., Sep-2025)" required/>
+        <input class="input" name="amount" type="number" min="0" placeholder="Amount (₹)" required/>
+        <select class="input" name="mode" required>
+          <option value="Cash">Cash</option>
+          <option value="UPI">UPI</option>
+          <option value="Card">Card</option>
+          <option value="Bank Transfer">Bank Transfer</option>
+          <option value="Cheque">Cheque</option>
+        </select>
+        <input class="input" name="txnId" placeholder="Txn / Ref No" required/>
+        <button class="btn" type="submit">Add Receipt</button>
+      </form>
+    </div>
 
-        <div class="table-wrap">
-          <table id="receiptTable">
-            <thead>
-              <tr>
-                <th>Receipt ID</th><th>Date</th><th>Flat No</th><th>Name</th><th>Month</th><th>Mode</th><th>Txn ID</th><th>Amount (₹)</th><th>Actions</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+    <!-- Receipt Template for Displaying Data -->
+    <!-- Receipt Template for Displaying Data -->
+<div id="receiptTemplate" class="receipt-template" style="display:none;">
+  <div class="receipt-box">
+    <div class="header">
+      <h2>Mangla Landmark</h2>
+      <p>Plot No 7, Karol Bagh Rd, Kalyan Sampat Orchid, Bharwsala, Indore, MP - 453555</p>
+      <h3>Maintenance Receipt</h3>
+    </div>
+    <table>
+      <tr><th>Receipt ID</th><td id="receiptId">RCPT-XXXXXXX</td></tr>
+      <tr><th>Date</th><td id="date">2025-09-06</td></tr>
+      <tr><th>Flat No</th><td id="flatNo">306</td></tr>
+      <tr><th>Owner</th><td id="ownerName">Ashutosh Kumar Deepak</td></tr>
+      <tr><th>Month</th><td id="month">May</td></tr>
+      <tr><th>Txn/Ref</th><td id="txnRef">aa</td></tr>
+      <tr><th>Mode</th><td id="paymentMode">UPI</td></tr>
+      <tr><th>Amount</th><td id="amount" class="right">11</td></tr>
+    </table>
+    <div class="footer">
+      <p><strong>Received with thanks towards monthly maintenance.</strong></p>
+      <p>This is a system generated receipt. No signature required.</p>
+    </div>
+    <button onclick="window.print()">Print / Save PDF</button>
+  </div>
+</div>
+
+
+
+    <!-- Receipts Table -->
+    <div class="table-wrap">
+      <table id="receiptTable">
+        <thead>
+          <tr>
+            <th>Receipt ID</th><th>Date</th><th>Flat No</th><th>Name</th><th>Month</th><th>Mode</th><th>Txn ID</th><th>Amount (₹)</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
 
     <!-- Announcements -->
     <section id="announcements" class="tab-panel">
@@ -219,6 +259,9 @@
   <script src="script.js"></script>
 </body>
 </html>
+
+
+
 
 
 
