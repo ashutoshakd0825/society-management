@@ -116,6 +116,7 @@ $('#ownerForm').addEventListener('submit', async (e)=>{
     flatNo: f.flatNo.value.trim(),
     name: f.name.value.trim(),
     contact: f.contact.value.trim(),
+     email: f.email.value.trim(),  // ✅ Added line
     sqft: Number(f.sqft.value||0),
     parking: f.parking.value.trim()
   };
