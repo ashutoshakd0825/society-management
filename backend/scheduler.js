@@ -1,5 +1,3 @@
-// scheduler.js
-
 require('dotenv').config();
 const cron = require("node-cron");
 const puppeteer = require("puppeteer");
@@ -117,7 +115,10 @@ async function generateStyledPDF(row, pdfPath) {
     </html>
   `;
 
-  const browser = await puppeteer.launch();
+  // Change here: Add no-sandbox flags for Puppeteer to run in Render environment
+  const browser = await puppeteer.launch({
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: 'networkidle0' });
   await page.pdf({
@@ -170,7 +171,6 @@ async function sendMonthlyReceipts() {
 
 // Schedule: 1st day of each month at 00:01 AM IST
 cron.schedule("* * * * *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
-
 
 // For testing manually:
 // sendMonthlyReceipts();
