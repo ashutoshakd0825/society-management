@@ -176,7 +176,7 @@ cron.schedule("1 0 1 * *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
 cron.schedule("* * * * *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
 
 // For testing manually:
-// sendMonthlyReceipts();
+sendMonthlyReceipts();
 
 // Schedule the job to run at 00:00 every month (1st day of every month at midnight IST)
 //cron.schedule('0 0 1 * *', sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
