@@ -4,8 +4,8 @@
   "description": "Backend for Society Management App using Node.js, Express, PostgreSQL",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
-    "postinstall": "puppeteer install"
+    "start": "node server.js",
+    "postinstall": "npx puppeteer install chrome"
   },
   "dependencies": {
     "cors": "^2.8.5",
