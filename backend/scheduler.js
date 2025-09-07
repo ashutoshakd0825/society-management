@@ -9,7 +9,10 @@ const { Pool } = require("pg");
 // PostgreSQL pool setup
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL || "postgresql://mangla_landmark_db_user:JmRg71RdnCpKHnRMK7mvADnucUbhAW9Z@dpg-d2tcj17diees7384j7mg-a/mangla_landmark_db",
-  ssl: false
+  ssl: {
+  rejectUnauthorized: false
+} 
+    
 });
 
 // Email transporter
