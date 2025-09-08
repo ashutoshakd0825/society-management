@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -54,6 +55,41 @@
           </div>
         </div>
         <div class="card">
+  <h3>💼 Society Monthly Balance Summary</h3>
+  <p>Shows collection vs expenses for the selected month.</p>
+        <div id="balanceSummaryContainer"></div>
+
+  <div class="grid-3">
+    <div>
+      <label for="dashboardMonth">Month:</label>
+      <select id="dashboardMonth" class="input"></select>
+    </div>
+    <div>
+      <label for="dashboardYear">Year:</label>
+      <select id="dashboardYear" class="input"></select>
+    </div>
+    <div>
+      <label>&nbsp;</label>
+      <button id="refreshDashboard" class="btn">Refresh</button>
+    </div>
+  </div>
+
+  <div class="stats mt-2">
+    <div>
+      <span id="totalCollection" class="stat-number">₹0</span>
+      <span class="stat-label">Total Collection</span>
+    </div>
+    <div>
+      <span id="totalExpenseDashboard" class="stat-number">₹0</span>
+      <span class="stat-label">Total Expenses</span>
+    </div>
+    <div>
+      <span id="balanceRemaining" class="stat-number">₹0</span>
+      <span class="stat-label">Remaining Balance</span>
+    </div>
+  </div>
+</div>
+        <div class="card">
           <h3>Admin Tools</h3>
           <p class="muted">Only visible to Admin.</p>
           <div class="admin-only">
@@ -64,6 +100,12 @@
             </label>
             <button id="resetDemoBtn" class="btn btn-danger btn-ghost">Load Demo Data</button>
             <button id="clearAllBtn" class="btn btn-danger">Clear All Data</button>
+             <!-- ✅ Initial Balance Feature -->
+            <div class="mt-2">
+              <label>Initial Bank Balance:</label>
+              <input id="initialBalance" type="number" class="input" placeholder="Enter initial balance" />
+              <button id="saveInitialBalance" class="btn">Save</button>
+            </div>
           </div>
         </div>
       </div>
@@ -199,8 +241,6 @@
   </div>
 </div>
 
-
-
     <!-- Receipts Table -->
     <div class="table-wrap">
       <table id="receiptTable">
@@ -214,7 +254,6 @@
     </div>
   </div>
 </section>
-
 
     <!-- Announcements -->
     <section id="announcements" class="tab-panel">
@@ -257,9 +296,9 @@
   </footer>
 
   <script src="script.js"></script>
+  <script src="balance.js"></script>
 </body>
 </html>
-
 
 
 
