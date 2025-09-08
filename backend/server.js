@@ -28,8 +28,7 @@ async function initDB() {
         contact TEXT,
         sqft INT,
         parking TEXT,
-        email TEXT             -- ✅ ADD this line
-
+        email TEXT
       );
       CREATE TABLE IF NOT EXISTS expenses (
         id SERIAL PRIMARY KEY,
@@ -53,6 +52,10 @@ async function initDB() {
         id SERIAL PRIMARY KEY,
         title TEXT,
         date TEXT
+      );
+      CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT
       );
     `);
     console.log("✅ Tables ensured");
@@ -102,24 +105,25 @@ app.post("/api/:type", async (req, res) => {
   let values = [];
 
   try {
-  if (type === "owners") {
-  query =
-    "INSERT INTO owners(flatNo, name, contact, sqft, parking, email) VALUES($1,$2,$3,$4,$5,$6) RETURNING *";
-  values = [
-    req.body.flatNo,
-    req.body.name,
-    req.body.contact,
-    req.body.sqft,
-    req.body.parking,
-    req.body.email              // ✅ ADD this
-  ];
-}
+    if (type === "owners") {
+      query =
+        "INSERT INTO owners(flatNo, name, contact, sqft, parking, email) VALUES($1,$2,$3,$4,$5,$6) RETURNING *";
+      values = [
+        req.body.flatNo,
+        req.body.name,
+        req.body.contact,
+        req.body.sqft,
+        req.body.parking,
+        req.body.email
+      ];
+    }
 
     if (type === "expenses") {
       query =
         "INSERT INTO expenses(category, amount, date, note) VALUES($1,$2,$3,$4) RETURNING *";
       values = [req.body.category, req.body.amount, req.body.date, req.body.note];
     }
+
     if (type === "receipts") {
       query =
         "INSERT INTO receipts(receiptId, date, flatNo, name, month, mode, txnId, amount) VALUES($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *";
@@ -134,6 +138,7 @@ app.post("/api/:type", async (req, res) => {
         req.body.amount
       ];
     }
+
     if (type === "announcements") {
       query =
         "INSERT INTO announcements(title, date) VALUES($1,$2) RETURNING *";
@@ -160,6 +165,76 @@ app.delete("/api/:type/:id", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ===== GET Setting by key =====
+app.get("/api/settings/:key", async (req, res) => {
+  const key = req.params.key;
+  try {
+    const result = await pool.query("SELECT value FROM settings WHERE key = $1", [key]);
+    if (result.rows.length > 0) {
+      res.json({ key, value: result.rows[0].value });
+    } else {
+      res.status(404).json({ error: "Setting not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ===== POST Setting (insert or update) =====
+app.post("/api/settings", async (req, res) => {
+  const { key, value } = req.body;
+  try {
+    const result = await pool.query(`
+      INSERT INTO settings (key, value)
+      VALUES ($1, $2)
+      ON CONFLICT (key)
+      DO UPDATE SET value = EXCLUDED.value
+      RETURNING *;
+    `, [key, value]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ===== GET Balance Summary =====
+app.get("/api/balance", async (req, res) => {
+  const { month, year } = req.query;
+
+  try {
+    const [receipts, expenses, settings] = await Promise.all([
+      pool.query("SELECT amount, date FROM receipts"),
+      pool.query("SELECT amount, date FROM expenses"),
+      pool.query("SELECT value FROM settings WHERE key = 'initial_balance'")
+    ]);
+
+    // Filter by month/year
+    const filterByMonthYear = (rows) => rows.filter(row => {
+      const d = new Date(row.date);
+      return (!month || (d.getMonth() + 1) == month) && (!year || d.getFullYear() == year);
+    });
+
+    const filteredReceipts = filterByMonthYear(receipts.rows);
+    const filteredExpenses = filterByMonthYear(expenses.rows);
+
+    const totalCollection = filteredReceipts.reduce((sum, r) => sum + Number(r.amount || 0), 0);
+    const totalExpenses = filteredExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+    const initialBalance = Number(settings.rows[0]?.value || 0);
+
+    const balance = initialBalance + totalCollection - totalExpenses;
+
+    res.json({
+      initialBalance,
+      totalCollection,
+      totalExpenses,
+      balance
+    });
+  } catch (err) {
+    console.error("❌ Error in balance API:", err);
     res.status(500).json({ error: err.message });
   }
 });
