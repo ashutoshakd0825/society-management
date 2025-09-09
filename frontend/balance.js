@@ -1,3 +1,4 @@
+console.log("✅ Balance.js loaded version:", new Date().toISOString());
 // ===== Utility for INR Formatting =====
 const fmtINR = n => '₹' + (Number(n || 0)).toLocaleString('en-IN');
 
