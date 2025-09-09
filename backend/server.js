@@ -118,6 +118,38 @@ app.get("/api/balance", async (req, res) => {
   }
 });
 
+// ===== GET Setting by key =====
+app.get("/api/settings/:key", async (req, res) => {
+  const setting_key = req.params.key;
+  try {
+    const result = await pool.query("SELECT value FROM settings WHERE setting_key = $1", [setting_key]);
+    if (result.rows.length > 0) {
+      res.json({ setting_key, value: result.rows[0].value });
+    } else {
+      res.status(404).json({ error: "Setting not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ===== POST Setting (insert or update) ===== ✅ FIXED: kept above /api/:type
+app.post("/api/settings", async (req, res) => {
+  const { setting_key, value } = req.body;
+  try {
+    const result = await pool.query(`
+      INSERT INTO settings (setting_key, value)
+      VALUES ($1, $2)
+      ON CONFLICT (setting_key)
+      DO UPDATE SET value = EXCLUDED.value
+      RETURNING *;
+    `, [setting_key, value]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ===== GET all =====
 app.get("/api/:type", async (req, res) => {
   const type = req.params.type;
@@ -133,7 +165,12 @@ app.get("/api/:type", async (req, res) => {
   }
 });
 
-
+// ===== ADD new =====
+app.post("/api/:type", async (req, res) => {
+  const type = req.params.type;
+  if (!validTables.includes(type)) {
+    return res.status(400).json({ error: "Invalid table" });
+  }
 
   let query = "";
   let values = [];
@@ -203,47 +240,7 @@ app.delete("/api/:type/:id", async (req, res) => {
   }
 });
 
-// ===== GET Setting by key =====
-app.get("/api/settings/:key", async (req, res) => {
-  const setting_key = req.params.key;
-  try {
-    const result = await pool.query("SELECT value FROM settings WHERE setting_key = $1", [setting_key]);
-    if (result.rows.length > 0) {
-      res.json({ setting_key, value: result.rows[0].value });
-    } else {
-      res.status(404).json({ error: "Setting not found" });
-    }
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ===== POST Setting (insert or update) =====
-app.post("/api/settings", async (req, res) => {
-  const { setting_key, value } = req.body;
-  try {
-    const result = await pool.query(`
-      INSERT INTO settings (setting_key, value)
-      VALUES ($1, $2)
-      ON CONFLICT (setting_key)
-      DO UPDATE SET value = EXCLUDED.value
-      RETURNING *;
-    `, [setting_key, value]);
-    res.json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-// ===== ADD new =====
-app.post("/api/:type", async (req, res) => {
-  const type = req.params.type;
-  if (!validTables.includes(type)) {
-    return res.status(400).json({ error: "Invalid table" });
-  }
 // ===== Start Server =====
 app.listen(PORT, () =>
   console.log(`✅ Server running on port ${PORT}`)
 );
-
-
-
