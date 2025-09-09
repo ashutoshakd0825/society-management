@@ -233,7 +233,7 @@ app.post("/api/settings", async (req, res) => {
       ON CONFLICT (setting_key)
       DO UPDATE SET value = EXCLUDED.value
       RETURNING *;
-    `, [key, value]);
+    `, [setting_key, value]);
     res.json(result.rows[0]);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -244,4 +244,5 @@ app.post("/api/settings", async (req, res) => {
 app.listen(PORT, () =>
   console.log(`✅ Server running on port ${PORT}`)
 );
+
 
