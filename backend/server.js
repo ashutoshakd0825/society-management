@@ -170,10 +170,11 @@ app.delete("/api/:type/:id", async (req, res) => {
 });
 
 // ===== GET Setting by key =====
+// ===== GET Setting by key =====
 app.get("/api/settings/:key", async (req, res) => {
   const key = req.params.key;
   try {
-    const result = await pool.query("SELECT value FROM settings WHERE key = $1", [key]);
+    const result = await pool.query("SELECT value FROM settings WHERE setting_key = $1", [key]);
     if (result.rows.length > 0) {
       res.json({ key, value: result.rows[0].value });
     } else {
@@ -189,9 +190,9 @@ app.post("/api/settings", async (req, res) => {
   const { key, value } = req.body;
   try {
     const result = await pool.query(`
-      INSERT INTO settings (key, value)
+      INSERT INTO settings (setting_key, value)
       VALUES ($1, $2)
-      ON CONFLICT (key)
+      ON CONFLICT (setting_key)
       DO UPDATE SET value = EXCLUDED.value
       RETURNING *;
     `, [key, value]);
@@ -200,6 +201,7 @@ app.post("/api/settings", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 
 // ===== GET Balance Summary =====
 app.get("/api/balance", async (req, res) => {
@@ -243,3 +245,4 @@ app.get("/api/balance", async (req, res) => {
 app.listen(PORT, () =>
   console.log(`✅ Server running on port ${PORT}`)
 );
+
