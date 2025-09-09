@@ -133,12 +133,7 @@ app.get("/api/:type", async (req, res) => {
   }
 });
 
-// ===== ADD new =====
-app.post("/api/:type", async (req, res) => {
-  const type = req.params.type;
-  if (!validTables.includes(type)) {
-    return res.status(400).json({ error: "Invalid table" });
-  }
+
 
   let query = "";
   let values = [];
@@ -239,10 +234,16 @@ app.post("/api/settings", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
+// ===== ADD new =====
+app.post("/api/:type", async (req, res) => {
+  const type = req.params.type;
+  if (!validTables.includes(type)) {
+    return res.status(400).json({ error: "Invalid table" });
+  }
 // ===== Start Server =====
 app.listen(PORT, () =>
   console.log(`✅ Server running on port ${PORT}`)
 );
+
 
 
