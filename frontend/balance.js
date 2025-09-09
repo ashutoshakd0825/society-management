@@ -72,7 +72,7 @@ document.querySelector('#saveInitialBalance')?.addEventListener('click', async (
     const res = await fetch(`${API_URL}/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ value: val })
+      body: JSON.stringify({ setting_key: 'initial_balance',value: val })
     });
 
     if (!res.ok) throw new Error("API save failed");
