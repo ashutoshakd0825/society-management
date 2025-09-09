@@ -51,6 +51,7 @@ async function initDB() {
       CREATE TABLE IF NOT EXISTS announcements (
         id SERIAL PRIMARY KEY,
         title TEXT,
+        body TEXT,
         date TEXT
       );
       CREATE TABLE IF NOT EXISTS settings (
@@ -141,8 +142,8 @@ app.post("/api/:type", async (req, res) => {
 
     if (type === "announcements") {
       query =
-        "INSERT INTO announcements(title, date) VALUES($1,$2) RETURNING *";
-      values = [req.body.title, req.body.date];
+        "INSERT INTO announcements(title, body, date) VALUES($1,$2,$3) RETURNING *";
+      values = [req.body.title, req.body.body, req.body.date];
     }
 
     const result = await pool.query(query, values);
@@ -168,7 +169,6 @@ app.delete("/api/:type/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // ===== GET Setting by key =====
 app.get("/api/settings/:key", async (req, res) => {
@@ -201,7 +201,6 @@ app.post("/api/settings", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
 
 // ===== GET Balance Summary =====
 app.get("/api/balance", async (req, res) => {
