@@ -47,9 +47,9 @@ async function renderBalanceSummary() {
     const { totalCollection, totalExpenses, balance, initialBalance } = await res.json();
 
     // Update UI
-    document.querySelector('#totalCollection')?.textContent = fmtINR(totalCollection);
-    document.querySelector('#totalExpenseDashboard')?.textContent = fmtINR(totalExpenses);
-    document.querySelector('#balanceRemaining')?.textContent = fmtINR(balance);
+    document.querySelector('#totalCollection').textContent = fmtINR(totalCollection);
+    document.querySelector('#totalExpenseDashboard').textContent = fmtINR(totalExpenses);
+    document.querySelector('#balanceRemaining').textContent = fmtINR(balance);
 
     // Initial balance input (Admin tools)
     const input = document.querySelector('#initialBalance');
