@@ -1,5 +1,5 @@
 // ===== API URL (pointing to your Render backend) =====
-const API_URL = "https://society-management-etd8.onrender.com/api";
+//const API_URL = "https://society-management-etd8.onrender.com/api";
 
 // ===== Utility for INR Formatting =====
 const fmtINR = n => '₹' + (Number(n || 0)).toLocaleString('en-IN');
