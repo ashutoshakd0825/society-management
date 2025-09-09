@@ -80,6 +80,44 @@ app.get("/api/test", async (req, res) => {
   }
 });
 
+// ===== GET Balance Summary (keep ABOVE /api/:type) =====
+app.get("/api/balance", async (req, res) => {
+  const { month, year } = req.query;
+
+  try {
+    const [receipts, expenses, settings] = await Promise.all([
+      pool.query("SELECT amount, date FROM receipts"),
+      pool.query("SELECT amount, date FROM expenses"),
+      pool.query("SELECT value FROM settings WHERE setting_key = 'initial_balance'")
+    ]);
+
+    // Filter by month/year
+    const filterByMonthYear = (rows) => rows.filter(row => {
+      const d = new Date(row.date);
+      return (!month || (d.getMonth() + 1) == month) && (!year || d.getFullYear() == year);
+    });
+
+    const filteredReceipts = filterByMonthYear(receipts.rows);
+    const filteredExpenses = filterByMonthYear(expenses.rows);
+
+    const totalCollection = filteredReceipts.reduce((sum, r) => sum + Number(r.amount || 0), 0);
+    const totalExpenses = filteredExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
+    const initialBalance = Number(settings.rows[0]?.value || 0);
+
+    const balance = initialBalance + totalCollection - totalExpenses;
+
+    res.json({
+      initialBalance,
+      totalCollection,
+      totalExpenses,
+      balance
+    });
+  } catch (err) {
+    console.error("❌ Error in balance API:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ===== GET all =====
 app.get("/api/:type", async (req, res) => {
   const type = req.params.type;
@@ -202,47 +240,7 @@ app.post("/api/settings", async (req, res) => {
   }
 });
 
-// ===== GET Balance Summary =====
-app.get("/api/balance", async (req, res) => {
-  const { month, year } = req.query;
-
-  try {
-    const [receipts, expenses, settings] = await Promise.all([
-      pool.query("SELECT amount, date FROM receipts"),
-      pool.query("SELECT amount, date FROM expenses"),
-      pool.query("SELECT value FROM settings WHERE setting_key = 'initial_balance'")
-    ]);
-
-    // Filter by month/year
-    const filterByMonthYear = (rows) => rows.filter(row => {
-      const d = new Date(row.date);
-      return (!month || (d.getMonth() + 1) == month) && (!year || d.getFullYear() == year);
-    });
-
-    const filteredReceipts = filterByMonthYear(receipts.rows);
-    const filteredExpenses = filterByMonthYear(expenses.rows);
-
-    const totalCollection = filteredReceipts.reduce((sum, r) => sum + Number(r.amount || 0), 0);
-    const totalExpenses = filteredExpenses.reduce((sum, e) => sum + Number(e.amount || 0), 0);
-    const initialBalance = Number(settings.rows[0]?.value || 0);
-
-    const balance = initialBalance + totalCollection - totalExpenses;
-
-    res.json({
-      initialBalance,
-      totalCollection,
-      totalExpenses,
-      balance
-    });
-  } catch (err) {
-    console.error("❌ Error in balance API:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
 // ===== Start Server =====
 app.listen(PORT, () =>
   console.log(`✅ Server running on port ${PORT}`)
 );
-
-
