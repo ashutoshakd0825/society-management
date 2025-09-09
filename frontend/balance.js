@@ -69,8 +69,8 @@ document.querySelector('#saveInitialBalance')?.addEventListener('click', async (
   }
 
   try {
-    const res = await fetch(`${API_URL}/settings/initial_balance`, {
-      method: 'POST',
+    const res = await fetch(`${API_URL}/settings`, {
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ value: val })
     });
