@@ -1,5 +1,5 @@
 // ===== Utility for INR Formatting =====
-const API_URL = "https://society-management-etd8.onrender.com/api"; 
+//const API_URL = "https://society-management-etd8.onrender.com/api"; 
 const fmtINR = n => '₹' + (Number(n || 0)).toLocaleString('en-IN');
 
 // ===== Populate Month & Year Dropdowns =====
