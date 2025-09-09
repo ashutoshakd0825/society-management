@@ -54,7 +54,7 @@ async function initDB() {
         date TEXT
       );
       CREATE TABLE IF NOT EXISTS settings (
-        key TEXT PRIMARY KEY,
+        setting_key TEXT PRIMARY KEY,
         value TEXT
       );
     `);
@@ -169,7 +169,7 @@ app.delete("/api/:type/:id", async (req, res) => {
   }
 });
 
-// ===== GET Setting by key =====
+
 // ===== GET Setting by key =====
 app.get("/api/settings/:key", async (req, res) => {
   const key = req.params.key;
@@ -211,7 +211,7 @@ app.get("/api/balance", async (req, res) => {
     const [receipts, expenses, settings] = await Promise.all([
       pool.query("SELECT amount, date FROM receipts"),
       pool.query("SELECT amount, date FROM expenses"),
-      pool.query("SELECT value FROM settings WHERE key = 'initial_balance'")
+      pool.query("SELECT value FROM settings WHERE setting_key = 'initial_balance'")
     ]);
 
     // Filter by month/year
@@ -245,4 +245,5 @@ app.get("/api/balance", async (req, res) => {
 app.listen(PORT, () =>
   console.log(`✅ Server running on port ${PORT}`)
 );
+
 
