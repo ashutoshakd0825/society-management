@@ -1,6 +1,7 @@
 // ===== Utility for INR Formatting =====
-//const API_URL = "https://society-management-etd8.onrender.com/api"; 
-//const fmtINR = n => '₹' + (Number(n || 0)).toLocaleString('en-IN');
+// (API_URL already defined in script.js, no need to redefine here)
+
+const fmtINR = n => '₹' + (Number(n || 0)).toLocaleString('en-IN');
 
 // ===== Populate Month & Year Dropdowns =====
 function populateMonthYearSelectors() {
@@ -8,7 +9,6 @@ function populateMonthYearSelectors() {
   const yearSel = document.querySelector('#dashboardYear');
   if (!monthSel || !yearSel) return;
 
-  // Months
   const months = [
     "01 - Jan", "02 - Feb", "03 - Mar", "04 - Apr",
     "05 - May", "06 - Jun", "07 - Jul", "08 - Aug",
@@ -19,25 +19,20 @@ function populateMonthYearSelectors() {
     monthSel.innerHTML += `<option value="${i + 1}">${m}</option>`;
   });
 
-  // Years (from 2023 → next year)
   const currentYear = new Date().getFullYear();
   yearSel.innerHTML = `<option value="">All</option>`;
   for (let y = 2023; y <= currentYear + 1; y++) {
     yearSel.innerHTML += `<option value="${y}">${y}</option>`;
   }
 
-  // Default selection
   monthSel.value = (new Date().getMonth() + 1).toString();
   yearSel.value = currentYear.toString();
 }
 
 // ===== Render Balance Summary from backend =====
 async function renderBalanceSummary() {
-  const monthSel = document.querySelector('#dashboardMonth');
-  const yearSel = document.querySelector('#dashboardYear');
-
-  const selectedMonth = monthSel?.value || "";
-  const selectedYear = yearSel?.value || "";
+  const selectedMonth = document.querySelector('#dashboardMonth')?.value || "";
+  const selectedYear = document.querySelector('#dashboardYear')?.value || "";
 
   try {
     const res = await fetch(`${API_URL}/balance?month=${selectedMonth}&year=${selectedYear}`);
@@ -45,12 +40,10 @@ async function renderBalanceSummary() {
 
     const { totalCollection, totalExpenses, balance, initialBalance } = await res.json();
 
-    // Update UI
     document.querySelector('#totalCollection').textContent = fmtINR(totalCollection);
     document.querySelector('#totalExpenseDashboard').textContent = fmtINR(totalExpenses);
     document.querySelector('#balanceRemaining').textContent = fmtINR(balance);
 
-    // Initial balance input (Admin tools)
     const input = document.querySelector('#initialBalance');
     if (input) input.value = initialBalance;
   } catch (err) {
@@ -72,13 +65,13 @@ document.querySelector('#saveInitialBalance')?.addEventListener('click', async (
     const res = await fetch(`${API_URL}/settings`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ setting_key: "initial_balance", value: val  })
+      body: JSON.stringify({ key: "initial_balance", value: val })   // ✅ FIXED
     });
 
     if (!res.ok) throw new Error("API save failed");
 
     alert("✅ Initial balance saved!");
-    renderBalanceSummary(); // Refresh
+    renderBalanceSummary();
   } catch (err) {
     console.error("❌ Error saving initial balance:", err);
     alert("⚠️ Error saving initial balance.");
