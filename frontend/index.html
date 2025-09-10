@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,40 +55,40 @@
           </div>
         </div>
         <div class="card">
-  <h3>💼 Society Monthly Balance Summary</h3>
-  <p>Shows collection vs expenses for the selected month.</p>
-        <div id="balanceSummaryContainer"></div>
+          <h3>💼 Society Monthly Balance Summary</h3>
+          <p>Shows collection vs expenses for the selected month.</p>
+          <div id="balanceSummaryContainer"></div>
 
-  <div class="grid-3">
-    <div>
-      <label for="dashboardMonth">Month:</label>
-      <select id="dashboardMonth" class="input"></select>
-    </div>
-    <div>
-      <label for="dashboardYear">Year:</label>
-      <select id="dashboardYear" class="input"></select>
-    </div>
-    <div>
-      <label>&nbsp;</label>
-      <button id="refreshDashboard" class="btn">Refresh</button>
-    </div>
-  </div>
+          <div class="grid-3">
+            <div>
+              <label for="dashboardMonth">Month:</label>
+              <select id="dashboardMonth" class="input"></select>
+            </div>
+            <div>
+              <label for="dashboardYear">Year:</label>
+              <select id="dashboardYear" class="input"></select>
+            </div>
+            <div>
+              <label>&nbsp;</label>
+              <button id="refreshDashboard" class="btn">Refresh</button>
+            </div>
+          </div>
 
-  <div class="stats mt-2">
-    <div>
-      <span id="totalCollection" class="stat-number">₹0</span>
-      <span class="stat-label">Total Collection</span>
-    </div>
-    <div>
-      <span id="totalExpenseDashboard" class="stat-number">₹0</span>
-      <span class="stat-label">Total Expenses</span>
-    </div>
-    <div>
-      <span id="balanceRemaining" class="stat-number">₹0</span>
-      <span class="stat-label">Remaining Balance</span>
-    </div>
-  </div>
-</div>
+          <div class="stats mt-2">
+            <div>
+              <span id="totalCollection" class="stat-number">₹0</span>
+              <span class="stat-label">Total Collection</span>
+            </div>
+            <div>
+              <span id="totalExpenseDashboard" class="stat-number">₹0</span>
+              <span class="stat-label">Total Expenses</span>
+            </div>
+            <div>
+              <span id="balanceRemaining" class="stat-number">₹0</span>
+              <span class="stat-label">Remaining Balance</span>
+            </div>
+          </div>
+        </div>
         <div class="card">
           <h3>Admin Tools</h3>
           <p class="muted">Only visible to Admin.</p>
@@ -101,7 +100,7 @@
             </label>
             <button id="resetDemoBtn" class="btn btn-danger btn-ghost">Load Demo Data</button>
             <button id="clearAllBtn" class="btn btn-danger">Clear All Data</button>
-             <!-- ✅ Initial Balance Feature -->
+            <!-- ✅ Initial Balance Feature -->
             <div class="mt-2">
               <label>Initial Bank Balance:</label>
               <input id="initialBalance" type="number" class="input" placeholder="Enter initial balance" />
@@ -113,41 +112,41 @@
     </section>
 
     <!-- Flat Owners -->
-<section id="owners" class="tab-panel">
-  <div class="card">
-    <div class="flex-between">
-      <h2>Flat Owner Details</h2>
-      <input id="ownerSearch" class="input" placeholder="Search by Flat No / Name / Contact"/>
-    </div>
-    <div class="admin-only mt-2">
-      <form id="ownerForm" class="grid-6">
-        <input required class="input" name="flatNo" placeholder="Flat No (e.g., A-101)"/>
-        <input required class="input" name="name" placeholder="Owner Name"/>
-        <input required class="input" name="contact" placeholder="Contact"/>
-        <input required class="input" name="email" placeholder="Email"/> <!-- ✅ ADDED EMAIL FIELD -->
-        <input required class="input" name="sqft" placeholder="Total Sq Ft" type="number" min="0"/>
-        <input required class="input" name="parking" placeholder="Parking No"/>
-        <button class="btn" type="submit">Add / Update</button>
-      </form>
-    </div>
-    <div class="table-wrap">
-      <table id="ownerTable">
-        <thead>
-          <tr>
-            <th>Flat No</th>
-            <th>Name</th>
-            <th>Contact</th>
-            <th>Email</th> <!-- ✅ ADDED EMAIL COLUMN -->
-            <th>Total Sq Ft</th>
-            <th>Parking No</th>
-            <th class="admin-only">Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</section>
+    <section id="owners" class="tab-panel">
+      <div class="card">
+        <div class="flex-between">
+          <h2>Flat Owner Details</h2>
+          <input id="ownerSearch" class="input" placeholder="Search by Flat No / Name / Contact"/>
+        </div>
+        <div class="admin-only mt-2">
+          <form id="ownerForm" class="grid-6">
+            <input required class="input" name="flatNo" placeholder="Flat No (e.g., A-101)"/>
+            <input required class="input" name="name" placeholder="Owner Name"/>
+            <input required class="input" name="contact" placeholder="Contact"/>
+            <input required class="input" name="email" placeholder="Email"/> <!-- ✅ Added -->
+            <input required class="input" name="sqft" placeholder="Total Sq Ft" type="number" min="0"/>
+            <input required class="input" name="parking" placeholder="Parking No"/>
+            <button class="btn" type="submit">Add / Update</button>
+          </form>
+        </div>
+        <div class="table-wrap">
+          <table id="ownerTable">
+            <thead>
+              <tr>
+                <th>Flat No</th>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Email</th>
+                <th>Total Sq Ft</th>
+                <th>Parking No</th>
+                <th class="admin-only">Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
     <!-- Expenses -->
     <section id="expenses" class="tab-panel">
@@ -175,7 +174,9 @@
         <div class="table-wrap">
           <table id="expenseTable">
             <thead>
-              <tr><th>Date</th><th>Category</th><th>Note</th><th>Amount (₹)</th><th class="admin-only">Actions</th></tr>
+              <tr>
+                <th>Date</th><th>Category</th><th>Note</th><th>Amount (₹)</th><th class="admin-only">Actions</th>
+              </tr>
             </thead>
             <tbody></tbody>
           </table>
@@ -188,73 +189,73 @@
         </div>
       </div>
     </section>
-  <!-- Maintenance Receipts -->
+
+    <!-- Maintenance Receipts -->
     <section id="receipts" class="tab-panel">
-  <div class="card">
-    <div class="flex-between">
-      <h2>Maintenance Receipts</h2>
-      <input id="receiptSearch" class="input" placeholder="Search by Flat No / Name / Txn ID"/>
-    </div>
-    
-    <!-- Form for Adding New Receipts -->
-    <div class="admin-only mt-2">
-      <form id="receiptForm" class="grid-6">
-        <input class="input" name="flatNo" placeholder="Flat No" required/>
-        <input class="input" name="name" placeholder="Owner Name" required/>
-        <input class="input" name="month" placeholder="Month (e.g., Sep-2025)" required/>
-        <input class="input" name="amount" type="number" min="0" placeholder="Amount (₹)" required/>
-        <select class="input" name="mode" required>
-          <option value="Cash">Cash</option>
-          <option value="UPI">UPI</option>
-          <option value="Card">Card</option>
-          <option value="Bank Transfer">Bank Transfer</option>
-          <option value="Cheque">Cheque</option>
-        </select>
-        <input class="input" name="txnId" placeholder="Txn / Ref No" required/>
-        <button class="btn" type="submit">Add Receipt</button>
-      </form>
-    </div>
+      <div class="card">
+        <div class="flex-between">
+          <h2>Maintenance Receipts</h2>
+          <input id="receiptSearch" class="input" placeholder="Search by Flat No / Name / Txn ID"/>
+        </div>
 
-  
-    <!-- Receipt Template for Displaying Data -->
-<div id="receiptTemplate" class="receipt-template" style="display:none;">
-  <div class="receipt-box">
-    <div class="header">
-      <h2>Mangla Landmark</h2>
-      <p>Plot No 7, Karol Bagh Rd, Kalyan Sampat Orchid, Bharwsala, Indore, MP - 453555</p>
-      <h3>Maintenance Receipt</h3>
-    </div>
-    <table>
-      <tr><th>Receipt ID</th><td id="receiptId">RCPT-XXXXXXX</td></tr>
-      <tr><th>Date</th><td id="date">2025-09-06</td></tr>
-      <tr><th>Flat No</th><td id="flatNo">306</td></tr>
-      <tr><th>Owner</th><td id="ownerName">Ashutosh Kumar Deepak</td></tr>
-      <tr><th>Month</th><td id="month">May</td></tr>
-      <tr><th>Txn/Ref</th><td id="txnRef">aa</td></tr>
-      <tr><th>Mode</th><td id="paymentMode">UPI</td></tr>
-      <tr><th>Amount</th><td id="amount" class="right">11</td></tr>
-    </table>
-    <div class="footer">
-      <p><strong>Received with thanks towards monthly maintenance.</strong></p>
-      <p>This is a system generated receipt. No signature required.</p>
-    </div>
-    <button onclick="window.print()">Print / Save PDF</button>
-  </div>
-</div>
+        <!-- Form -->
+        <div class="admin-only mt-2">
+          <form id="receiptForm" class="grid-6">
+            <input class="input" name="flatNo" placeholder="Flat No" required/>
+            <input class="input" name="name" placeholder="Owner Name" required/>
+            <input class="input" name="month" placeholder="Month (e.g., Sep-2025)" required/>
+            <input class="input" name="amount" type="number" min="0" placeholder="Amount (₹)" required/>
+            <select class="input" name="mode" required>
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Card">Card</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Cheque">Cheque</option>
+            </select>
+            <input class="input" name="txnId" placeholder="Txn / Ref No" required/>
+            <button class="btn" type="submit">Add Receipt</button>
+          </form>
+        </div>
 
-    <!-- Receipts Table -->
-    <div class="table-wrap">
-      <table id="receiptTable">
-        <thead>
-          <tr>
-            <th>Receipt ID</th><th>Date</th><th>Flat No</th><th>Name</th><th>Month</th><th>Mode</th><th>Txn ID</th><th>Amount (₹)</th><th>Actions</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </div>
-</section>
+        <!-- Template -->
+        <div id="receiptTemplate" class="receipt-template" style="display:none;">
+          <div class="receipt-box">
+            <div class="header">
+              <h2>Mangla Landmark</h2>
+              <p>Plot No 7, Karol Bagh Rd, Kalyan Sampat Orchid, Bharwsala, Indore, MP - 453555</p>
+              <h3>Maintenance Receipt</h3>
+            </div>
+            <table>
+              <tr><th>Receipt ID</th><td id="receiptId">RCPT-XXXXXXX</td></tr>
+              <tr><th>Date</th><td id="date">2025-09-06</td></tr>
+              <tr><th>Flat No</th><td id="flatNo">306</td></tr>
+              <tr><th>Owner</th><td id="ownerName">Ashutosh Kumar Deepak</td></tr>
+              <tr><th>Month</th><td id="month">May</td></tr>
+              <tr><th>Txn/Ref</th><td id="txnRef">aa</td></tr>
+              <tr><th>Mode</th><td id="paymentMode">UPI</td></tr>
+              <tr><th>Amount</th><td id="amount" class="right">11</td></tr>
+            </table>
+            <div class="footer">
+              <p><strong>Received with thanks towards monthly maintenance.</strong></p>
+              <p>This is a system generated receipt. No signature required.</p>
+            </div>
+            <button onclick="window.print()">Print / Save PDF</button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap">
+          <table id="receiptTable">
+            <thead>
+              <tr>
+                <th>Receipt ID</th><th>Date</th><th>Flat No</th><th>Name</th><th>Month</th><th>Mode</th><th>Txn ID</th><th>Amount (₹)</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
     <!-- Announcements -->
     <section id="announcements" class="tab-panel">
@@ -272,94 +273,66 @@
         <div id="announceList" class="announcements"></div>
       </div>
     </section>
+
+    <!-- Complaints -->
+    <section id="complaints" class="tab-panel">
+      <div class="card">
+        <div class="flex-between">
+          <h2>Register a Complaint</h2>
+          <div class="muted">Residents can raise complaints. Admin can view/ack/close.</div>
+        </div>
+
+        <!-- Form -->
+        <div class="mt-2">
+          <form id="complaintForm" class="grid-4 admin-or-owner">
+            <input class="input" name="flatNo" id="complaintFlat" placeholder="Flat No (start typing)" required />
+            <input class="input" name="ownerName" id="complaintOwner" placeholder="Owner Name (auto)" required />
+            <textarea class="input" name="body" id="complaintBody" rows="3" placeholder="Write your complaint..." required></textarea>
+            <div>
+              <label><input type="checkbox" id="complaintPublic" /> Make this complaint visible to all owners (Public)</label>
+            </div>
+            <div class="grid-2">
+              <div>
+                <label>Date/Time (auto)</label>
+                <input class="input" id="complaintDate" name="date" readonly />
+              </div>
+              <div>
+                <label>&nbsp;</label>
+                <button class="btn" type="submit">Submit Complaint</button>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <hr />
+
+        <div class="flex-between">
+          <h3>All Complaints</h3>
+          <div>
+            <select id="complaintFilter" class="input">
+              <option value="all">All</option>
+              <option value="open">Open</option>
+              <option value="ack">Acknowledged</option>
+              <option value="closed">Closed</option>
+              <option value="mine">My Complaints</option>
+              <option value="public">Public Only</option>
+            </select>
+            <button id="refreshComplaints" class="btn btn-outline">Refresh</button>
+          </div>
+        </div>
+
+        <div id="complaintsList" class="mt-2"></div>
+      </div>
+    </section>
   </main>
 
-  <!-- Login Modal -->
-  <dialog id="loginModal" class="modal">
-    <form method="dialog" id="loginForm" class="modal-card">
-      <h3>Admin Login</h3>
-      <label>Username
-        <input class="input" id="username" placeholder="admin" required/>
-      </label>
-      <label>Password
-        <input class="input" id="password" type="password" placeholder="admin" required/>
-      </label>
-      <div class="modal-actions">
-        <button class="btn" id="loginSubmit">Login</button>
-        <button class="btn btn-outline" value="cancel">Cancel</button>
-      </div>
-      <p class="muted">Default credentials: <strong>admin / admin</strong>. For demo use only.</p>
-    </form>
-  </dialog>
-<!-- Complaints (NEW) -->
-<section id="complaints" class="tab-panel">
-  <div class="card">
-    <div class="flex-between">
-      <h2>Register a Complaint</h2>
-      <div class="muted">Residents can raise complaints. Admin can view/ack/close.</div>
-    </div>
-
-    <!-- Form -->
-    <div class="mt-2">
-      <form id="complaintForm" class="grid-4 admin-or-owner">
-        <input class="input" name="flatNo" id="complaintFlat" placeholder="Flat No (start typing)" required />
-        <input class="input" name="ownerName" id="complaintOwner" placeholder="Owner Name (auto)" required />
-        <textarea class="input" name="body" id="complaintBody" rows="3" placeholder="Write your complaint..." required></textarea>
-        <div>
-          <label><input type="checkbox" id="complaintPublic" /> Make this complaint visible to all owners (Public)</label>
-        </div>
-        <div class="grid-2">
-          <div>
-            <label>Date/Time (auto)</label>
-            <input class="input" id="complaintDate" name="date" readonly />
-          </div>
-          <div>
-            <label>&nbsp;</label>
-            <button class="btn" type="submit">Submit Complaint</button>
-          </div>
-        </div>
-      </form>
-    </div>
-
-    <hr />
-
-    <div class="flex-between">
-      <h3>All Complaints</h3>
-      <div>
-        <select id="complaintFilter" class="input">
-          <option value="all">All</option>
-          <option value="open">Open</option>
-          <option value="ack">Acknowledged</option>
-          <option value="closed">Closed</option>
-          <option value="mine">My Complaints</option>
-          <option value="public">Public Only</option>
-        </select>
-        <button id="refreshComplaints" class="btn btn-outline">Refresh</button>
-      </div>
-    </div>
-
-    <div id="complaintsList" class="mt-2"></div>
-
-  </div>
-</section>
   <footer class="app-footer">
     <p>© <span id="year"></span> Mangla Landmark society.</p>
   </footer>
 
+  <!-- Scripts -->
   <script src="./script.js"></script>
   <script src="./balance.js"></script>
   <script src="./complaints.js"></script>
-
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
