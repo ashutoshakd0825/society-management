@@ -290,16 +290,68 @@
       <p class="muted">Default credentials: <strong>admin / admin</strong>. For demo use only.</p>
     </form>
   </dialog>
+<!-- Complaints (NEW) -->
+<section id="complaints" class="tab-panel">
+  <div class="card">
+    <div class="flex-between">
+      <h2>Register a Complaint</h2>
+      <div class="muted">Residents can raise complaints. Admin can view/ack/close.</div>
+    </div>
 
+    <!-- Form -->
+    <div class="mt-2">
+      <form id="complaintForm" class="grid-4 admin-or-owner">
+        <input class="input" name="flatNo" id="complaintFlat" placeholder="Flat No (start typing)" required />
+        <input class="input" name="ownerName" id="complaintOwner" placeholder="Owner Name (auto)" required />
+        <textarea class="input" name="body" id="complaintBody" rows="3" placeholder="Write your complaint..." required></textarea>
+        <div>
+          <label><input type="checkbox" id="complaintPublic" /> Make this complaint visible to all owners (Public)</label>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label>Date/Time (auto)</label>
+            <input class="input" id="complaintDate" name="date" readonly />
+          </div>
+          <div>
+            <label>&nbsp;</label>
+            <button class="btn" type="submit">Submit Complaint</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <hr />
+
+    <div class="flex-between">
+      <h3>All Complaints</h3>
+      <div>
+        <select id="complaintFilter" class="input">
+          <option value="all">All</option>
+          <option value="open">Open</option>
+          <option value="ack">Acknowledged</option>
+          <option value="closed">Closed</option>
+          <option value="mine">My Complaints</option>
+          <option value="public">Public Only</option>
+        </select>
+        <button id="refreshComplaints" class="btn btn-outline">Refresh</button>
+      </div>
+    </div>
+
+    <div id="complaintsList" class="mt-2"></div>
+
+  </div>
+</section>
   <footer class="app-footer">
     <p>© <span id="year"></span> Mangla Landmark society.</p>
   </footer>
 
   <script src="./script.js"></script>
   <script src="./balance.js"></script>
+  <script src="./complaints.js"></script>
 
 </body>
 </html>
+
 
 
 
