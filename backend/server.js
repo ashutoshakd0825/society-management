@@ -87,7 +87,7 @@ async function cleanupOldComplaints() {
 }
 
 // ===== Safe Tables =====
-const validTables = ["owners", "expenses", "receipts", "announcements"];
+const validTables = ["owners", "expenses", "receipts", "announcements", "complaints"];
 
 // ===== Test Endpoint =====
 app.get("/api/test", async (req, res) => {
@@ -341,4 +341,5 @@ app.delete("/api/complaints/:id", async (req, res) => {
 app.listen(PORT, () =>
   console.log(`✅ Server running on port ${PORT}`)
 );
+
 
