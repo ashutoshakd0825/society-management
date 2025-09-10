@@ -47,7 +47,7 @@ async function putRemote(path, body) {
   return res.json();
 }
 async function deleteRemote(path) {
-  const res = await fetch(`${API_URL}${path}`, { method: "DELETE" });
+  const res = await fetch(`${API_URL}/${path}`, { method: "DELETE" });
   return res.json();
 }
 
