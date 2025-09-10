@@ -58,6 +58,16 @@ async function initDB() {
         setting_key TEXT PRIMARY KEY,
         value TEXT
       );
+      CREATE TABLE IF NOT EXISTS complaints (
+  id SERIAL PRIMARY KEY,
+  flatNo TEXT,
+  ownerName TEXT,
+  body TEXT,
+  is_public BOOLEAN DEFAULT TRUE,
+  status TEXT DEFAULT 'open',
+  admin_comments TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+  );
     `);
     console.log("✅ Tables ensured");
   } catch (err) {
@@ -65,6 +75,16 @@ async function initDB() {
   }
 }
 initDB();
+// ===== Auto-clean complaints older than 2 months (runs daily) =====
+async function cleanupOldComplaints() {
+  try {
+    // delete complaints older than 61 days
+    await pool.query("DELETE FROM complaints WHERE created_at < NOW() - INTERVAL '61 days'");
+    console.log("✅ Old complaints cleanup done");
+  } catch (err) {
+    console.error("Error cleaning complaints:", err);
+  }
+}
 
 // ===== Safe Tables =====
 const validTables = ["owners", "expenses", "receipts", "announcements"];
@@ -239,8 +259,86 @@ app.delete("/api/:type/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ===== Complaints API =====
+// GET complaints (returns public ones + private ones depending on viewerRole/viewerFlat)
+app.get("/api/complaints", async (req, res) => {
+  const { viewerRole = 'Guest', viewerFlat = '' } = req.query;
+  try {
+    // fetch all complaints
+    const result = await pool.query("SELECT * FROM complaints ORDER BY id DESC");
+    const rows = result.rows;
 
+    // filter: public OR (private + owner matches) OR admin
+    const filtered = rows.filter(r => {
+      if (r.is_public) return true;
+      if (viewerRole === 'Admin') return true;
+      if (viewerFlat && String(r.flatno || r.flatNo || '').toLowerCase() === String(viewerFlat).toLowerCase()) return true;
+      return false;
+    });
+    res.json(filtered);
+  } catch (err) {
+    console.error("Error fetching complaints:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST new complaint
+app.post("/api/complaints", async (req, res) => {
+  const { flatNo, ownerName, body, is_public = true, status = 'open', admin_comments = '', created_at } = req.body;
+  try {
+    const result = await pool.query(
+      `INSERT INTO complaints (flatNo, ownerName, body, is_public, status, admin_comments, created_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+      [flatNo, ownerName, body, is_public, status, admin_comments, created_at || new Date().toISOString()]
+    );
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error creating complaint:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PUT update complaint (admin actions or owner update)
+app.put("/api/complaints/:id", async (req, res) => {
+  const id = req.params.id;
+  const { status, admin_comments } = req.body;
+  try {
+    // update only provided fields
+    const updates = [];
+    const vals = [];
+    let idx = 1;
+    if (status !== undefined) {
+      updates.push(`status = $${idx++}`);
+      vals.push(status);
+    }
+    if (admin_comments !== undefined) {
+      updates.push(`admin_comments = $${idx++}`);
+      vals.push(admin_comments);
+    }
+    if (updates.length === 0) return res.status(400).json({ error: "Nothing to update" });
+    vals.push(id);
+    const q = `UPDATE complaints SET ${updates.join(', ')} WHERE id = $${idx} RETURNING *`;
+    const result = await pool.query(q, vals);
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error updating complaint:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE complaint (admin)
+app.delete("/api/complaints/:id", async (req, res) => {
+  const id = req.params.id;
+  try {
+    await pool.query("DELETE FROM complaints WHERE id = $1", [id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error deleting complaint:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // ===== Start Server =====
 app.listen(PORT, () =>
   console.log(`✅ Server running on port ${PORT}`)
 );
+
