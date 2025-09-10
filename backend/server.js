@@ -287,7 +287,7 @@ app.post("/api/complaints", async (req, res) => {
   const { flatNo, ownerName, body, is_public = true, status = 'open', admin_comments = '', created_at } = req.body;
   try {
     const result = await pool.query(
-      `INSERT INTO complaints (flatNo, ownerName, body, is_public, status, admin_comments, created_at)
+      `INSERT INTO complaints (flatno, ownername, body, is_public, status, admin_comments, created_at)
        VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
       [flatNo, ownerName, body, is_public, status, admin_comments, created_at || new Date().toISOString()]
     );
@@ -341,5 +341,6 @@ app.delete("/api/complaints/:id", async (req, res) => {
 app.listen(PORT, () =>
   console.log(`✅ Server running on port ${PORT}`)
 );
+
 
 
