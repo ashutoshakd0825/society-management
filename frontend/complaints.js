@@ -8,7 +8,7 @@ function setComplaintDateTime() {
   const dtInput = document.querySelector('#complaintDate');
   if (dtInput) {
     const now = new Date();
-    dtInput.value = now.toISOString().slice(0, 19).replace("T", " "); 
+    dtInput.value = now.toISOString().slice(0, 19).replace("T", " ");
   }
 }
 setComplaintDateTime();
@@ -17,8 +17,8 @@ setComplaintDateTime();
 document.querySelector('#complaintForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-  const flatNo = document.querySelector('#complaintFlatNo')?.value?.trim();
-  const ownerName = document.querySelector('#complaintOwnerName')?.value?.trim();
+  const flatNo = document.querySelector('#complaintFlat')?.value?.trim();
+  const ownerName = document.querySelector('#complaintOwner')?.value?.trim();
   const body = document.querySelector('#complaintBody')?.value?.trim();
   const is_public = document.querySelector('#complaintPublic')?.checked;
   const created_at = document.querySelector('#complaintDate')?.value;
@@ -37,7 +37,8 @@ document.querySelector('#complaintForm')?.addEventListener('submit', async (e) =
         ownerName,
         body,
         is_public,
-        created_at
+        created_at,
+        status: "open"
       })
     });
 
@@ -58,10 +59,25 @@ async function renderComplaints() {
   if (!container) return;
 
   try {
-    const res = await fetch(`${API_URL}/complaints?viewerRole=Admin`);
+    const res = await fetch(`${API_URL}/complaints?viewerRole=${CURRENT_USER.role}`);
     if (!res.ok) throw new Error("API call failed");
 
-    const complaints = await res.json();
+    let complaints = await res.json();
+
+    // ---- Apply filters ----
+    const filter = document.querySelector('#complaintFilter')?.value;
+    if (filter === "mine") {
+      complaints = complaints.filter(c => (c.flatno || c.flatNo) === CURRENT_USER.flatNo);
+    } else if (filter === "public") {
+      complaints = complaints.filter(c => c.is_public);
+    } else if (filter === "open") {
+      complaints = complaints.filter(c => c.status === "open");
+    } else if (filter === "ack") {
+      complaints = complaints.filter(c => c.status === "ongoing");
+    } else if (filter === "closed") {
+      complaints = complaints.filter(c => c.status === "closed");
+    }
+
     if (!complaints.length) {
       container.innerHTML = `<p>No complaints found.</p>`;
       return;
@@ -81,29 +97,44 @@ async function renderComplaints() {
           </tr>
         </thead>
         <tbody>
-          ${complaints.map(c => `
-            <tr>
-              <td>${c.flatno || c.flatNo || ""}</td>
-              <td>${new Date(c.created_at).toLocaleString()}</td>
-              <td>${c.ownername || c.ownerName || ""}</td>
-              <td>${c.body}</td>
-              <td>
-                <select data-status="${c.id}">
-                  <option value="open" ${c.status === "open" ? "selected" : ""}>Open</option>
-                  <option value="ongoing" ${c.status === "ongoing" ? "selected" : ""}>Ongoing</option>
-                  <option value="closed" ${c.status === "closed" ? "selected" : ""}>Closed</option>
-                  <option value="not_possible" ${c.status === "not_possible" ? "selected" : ""}>Not Possible</option>
-                </select>
-              </td>
-              <td>
-                <input type="text" data-comment="${c.id}" value="${c.admin_comments || ""}" />
-              </td>
-              <td>
-                <button data-save="${c.id}">Save</button>
-                <button data-del="${c.id}">Delete</button>
-              </td>
-            </tr>
-          `).join("")}
+          ${complaints.map(c => {
+            const id = c.id;
+            const flat = c.flatno || c.flatNo || "";
+            const name = c.ownername || c.ownerName || "";
+            const date = new Date(c.created_at).toLocaleString();
+            const body = c.body || "";
+            const status = c.status || "open";
+            const admin_comments = c.admin_comments || "";
+            const isAdmin = CURRENT_USER.role === "Admin";
+
+            return `
+              <tr>
+                <td>${flat}</td>
+                <td>${date}</td>
+                <td>${name}</td>
+                <td>${body}</td>
+                <td>
+                  ${isAdmin ? `
+                    <select data-status="${id}">
+                      <option value="open" ${status === "open" ? "selected" : ""}>Open</option>
+                      <option value="ongoing" ${status === "ongoing" ? "selected" : ""}>Ongoing</option>
+                      <option value="closed" ${status === "closed" ? "selected" : ""}>Closed</option>
+                      <option value="not_possible" ${status === "not_possible" ? "selected" : ""}>Not Possible</option>
+                    </select>
+                  ` : status}
+                </td>
+                <td>
+                  ${isAdmin ? `<input type="text" data-comment="${id}" value="${admin_comments}" />` : admin_comments}
+                </td>
+                <td>
+                  ${isAdmin ? `
+                    <button data-save="${id}">Save</button>
+                    <button data-del="${id}">Delete</button>
+                  ` : ""}
+                </td>
+              </tr>
+            `;
+          }).join("")}
         </tbody>
       </table>
     `;
@@ -154,6 +185,10 @@ async function renderComplaints() {
     container.innerHTML = `<p>Failed to load complaints.</p>`;
   }
 }
+
+// ---- Event listeners for filters ----
+document.querySelector('#complaintFilter')?.addEventListener('change', renderComplaints);
+document.querySelector('#refreshComplaints')?.addEventListener('click', renderComplaints);
 
 // ---- Initialize ----
 renderComplaints();
