@@ -3,6 +3,16 @@
 // ---- Backend API URL ----
 //const API_URL = "https://society-management-etd8.onrender.com/api";
 
+// ---- Auto-fill current date/time ----
+function setComplaintDateTime() {
+  const dtInput = document.querySelector('#complaintDate');
+  if (dtInput) {
+    const now = new Date();
+    dtInput.value = now.toISOString().slice(0, 19).replace("T", " "); 
+  }
+}
+setComplaintDateTime();
+
 // ---- Add new complaint ----
 document.querySelector('#complaintForm')?.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -11,6 +21,7 @@ document.querySelector('#complaintForm')?.addEventListener('submit', async (e) =
   const ownerName = document.querySelector('#complaintOwnerName')?.value?.trim();
   const body = document.querySelector('#complaintBody')?.value?.trim();
   const is_public = document.querySelector('#complaintPublic')?.checked;
+  const created_at = document.querySelector('#complaintDate')?.value;
 
   if (!flatNo || !ownerName || !body) {
     alert("⚠️ Please fill all fields.");
@@ -25,13 +36,15 @@ document.querySelector('#complaintForm')?.addEventListener('submit', async (e) =
         flatNo,
         ownerName,
         body,
-        is_public
+        is_public,
+        created_at
       })
     });
 
     if (!res.ok) throw new Error("Failed to submit complaint");
     alert("✅ Complaint submitted!");
     document.querySelector('#complaintForm').reset();
+    setComplaintDateTime(); // reset new datetime
     renderComplaints();
   } catch (err) {
     console.error("❌ Complaint submit failed:", err);
@@ -95,7 +108,7 @@ async function renderComplaints() {
       </table>
     `;
 
-    // ---- Attach actions ----
+    // ---- Save action ----
     container.querySelectorAll("[data-save]").forEach(btn => {
       btn.addEventListener("click", async () => {
         const id = btn.dataset.save;
@@ -118,6 +131,7 @@ async function renderComplaints() {
       });
     });
 
+    // ---- Delete action ----
     container.querySelectorAll("[data-del]").forEach(btn => {
       btn.addEventListener("click", async () => {
         if (!confirm("Delete this complaint?")) return;
