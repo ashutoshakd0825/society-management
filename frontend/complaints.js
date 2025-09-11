@@ -1,7 +1,7 @@
 // ================= Complaints Module =================
 
 // ---- Backend API URL ----
-const API_URL = "https://society-management-etd8.onrender.com/api";
+//const API_URL = "https://society-management-etd8.onrender.com/api";
 
 // ---- Add new complaint ----
 document.querySelector('#complaintForm')?.addEventListener('submit', async (e) => {
