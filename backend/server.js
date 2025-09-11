@@ -272,7 +272,7 @@ app.get("/api/complaints", async (req, res) => {
     const filtered = rows.filter(r => {
       if (r.is_public) return true;
       if (viewerRole === 'Admin') return true;
-      if (viewerFlat && String(r.flatno || r.flatNo || '').toLowerCase() === String(viewerFlat).toLowerCase()) return true;
+      if (viewerFlat && String(r.flatno || '').toLowerCase() === String(viewerFlat).toLowerCase()) return true;
       return false;
     });
     res.json(filtered);
@@ -341,6 +341,7 @@ app.delete("/api/complaints/:id", async (req, res) => {
 app.listen(PORT, () =>
   console.log(`✅ Server running on port ${PORT}`)
 );
+
 
 
 
