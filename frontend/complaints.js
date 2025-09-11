@@ -1,7 +1,8 @@
 // ================= Complaints Module =================
 
 // ---- Backend API URL ----
-//const API_URL = "https://society-management-etd8.onrender.com/api";
+// Uncomment below if you're deploying, otherwise leave it as relative
+// const API_URL = "https://society-management-etd8.onrender.com/api";
 
 // ---- Auto-fill current date/time ----
 function setComplaintDateTime() {
@@ -14,42 +15,41 @@ function setComplaintDateTime() {
 setComplaintDateTime();
 
 // ---- Add new complaint ----
-document.querySelector('#complaintForm')?.addEventListener('submit', async (e) => {
+document.getElementById("complaintForm").addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const flatNo = document.querySelector('#complaintFlat')?.value?.trim();
-  const ownerName = document.querySelector('#complaintOwner')?.value?.trim();
-  const body = document.querySelector('#complaintBody')?.value?.trim();
-  const is_public = document.querySelector('#complaintPublic')?.checked;
-  const created_at = document.querySelector('#complaintDate')?.value;
+  const flatNo = document.getElementById("complaintFlatNo").value.trim().toLowerCase(); // ✅ lowercase
+  const ownerName = document.getElementById("complaintOwnerName").value.trim().toLowerCase(); // ✅ lowercase
+  const body = document.getElementById("complaintBody").value.trim();
+  const is_public = document.getElementById("complaintPublic").checked;
+  const date = new Date().toISOString();
 
-  if (!flatNo || !ownerName || !body) {
-    alert("⚠️ Please fill all fields.");
-    return;
-  }
+  const payload = {
+    flatNo,
+    ownerName,
+    body,
+    is_public,
+    created_at: date,
+  };
 
   try {
-    const res = await fetch(`${API_URL}/complaints`, {
+    const res = await fetch("/api/complaints", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        flatNo,
-        ownerName,
-        body,
-        is_public,
-        created_at,
-        status: "open"
-      })
+      body: JSON.stringify(payload),
     });
+    const data = await res.json();
 
-    if (!res.ok) throw new Error("Failed to submit complaint");
-    alert("✅ Complaint submitted!");
-    document.querySelector('#complaintForm').reset();
-    setComplaintDateTime(); // reset new datetime
-    renderComplaints();
+    if (res.ok) {
+      alert("✅ Complaint submitted");
+      document.getElementById("complaintForm").reset();
+      renderComplaints(); // reload list
+    } else {
+      alert("❌ Error: " + data.error);
+    }
   } catch (err) {
-    console.error("❌ Complaint submit failed:", err);
-    alert("⚠️ Failed to submit complaint.");
+    console.error("Error submitting complaint:", err);
+    alert("❌ Failed to submit complaint");
   }
 });
 
@@ -59,7 +59,7 @@ async function renderComplaints() {
   if (!container) return;
 
   try {
-    const res = await fetch(`${API_URL}/complaints?viewerRole=${CURRENT_USER.role}`);
+    const res = await fetch(`/api/complaints?viewerRole=${CURRENT_USER.role}&viewerFlat=${CURRENT_USER.flatNo.toLowerCase()}`);
     if (!res.ok) throw new Error("API call failed");
 
     let complaints = await res.json();
@@ -67,7 +67,9 @@ async function renderComplaints() {
     // ---- Apply filters ----
     const filter = document.querySelector('#complaintFilter')?.value;
     if (filter === "mine") {
-      complaints = complaints.filter(c => (c.flatno || c.flatNo) === CURRENT_USER.flatNo);
+      complaints = complaints.filter(c =>
+        (c.flatno || c.flatNo || '').toLowerCase() === CURRENT_USER.flatNo.toLowerCase()
+      );
     } else if (filter === "public") {
       complaints = complaints.filter(c => c.is_public);
     } else if (filter === "open") {
@@ -147,7 +149,7 @@ async function renderComplaints() {
         const admin_comments = container.querySelector(`[data-comment="${id}"]`)?.value;
 
         try {
-          const res = await fetch(`${API_URL}/complaints/${id}`, {
+          const res = await fetch(`/api/complaints/${id}`, {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ status, admin_comments })
@@ -167,7 +169,7 @@ async function renderComplaints() {
       btn.addEventListener("click", async () => {
         if (!confirm("Delete this complaint?")) return;
         try {
-          const res = await fetch(`${API_URL}/complaints/${btn.dataset.del}`, {
+          const res = await fetch(`/api/complaints/${btn.dataset.del}`, {
             method: "DELETE"
           });
           if (!res.ok) throw new Error("Delete failed");
@@ -182,7 +184,7 @@ async function renderComplaints() {
 
   } catch (err) {
     console.error("❌ Failed to load complaints:", err);
-    container.innerHTML = `<p>Failed to load complaints.</p>`;
+    container.innerHTML = `<p>❌ Failed to load complaints.</p>`;
   }
 }
 
