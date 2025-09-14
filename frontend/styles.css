@@ -261,3 +261,45 @@ tr:hover{background:#f3f4f6}
   .receipt-box { border: none; box-shadow: none; margin: 0; }
 }
 
+/* About tab */
+.tab[data-tab="about"] {
+  background: linear-gradient(135deg, #06b6d4, #3b82f6);
+  color: white;
+}
+
+/* Owners tab */
+.tab[data-tab="owners"] {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+}
+
+/* Expenses tab */
+.tab[data-tab="expenses"] {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+/* Receipts tab */
+.tab[data-tab="receipts"] {
+  background: linear-gradient(135deg, #6366f1, #4338ca);
+  color: white;
+}
+
+/* Announcements tab */
+.tab[data-tab="announcements"] {
+  background: linear-gradient(135deg, #ef4444, #b91c1c);
+  color: white;
+}
+
+/* Complaints tab */
+.tab[data-tab="complaints"] {
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  color: white;
+}
+
+/* Active tab highlight */
+.tab.active {
+  outline: 2px solid #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+
