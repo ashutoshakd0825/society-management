@@ -7,13 +7,9 @@ const nodemailer = require("nodemailer");
 const { Pool } = require("pg");
 const html_to_pdf = require("html-pdf-node"); // ✅ Replaced puppeteer
 
-// PostgreSQL pool setup
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
-});
+const pool = require("./db");
+
+
 
 // Email transporter
 const transporter = nodemailer.createTransport({
@@ -167,6 +163,7 @@ async function sendMonthlyReceipts() {
   }
 }
 
+/*
 // 🕓 Cron Schedule — Run every 1st of month at 00:01 IST
 cron.schedule("1 0 1 * *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
 
@@ -186,3 +183,4 @@ sendMonthlyReceipts();
 
 //cron.schedule("20 14 7 9 *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
 cron.schedule("0 9 15 * *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
+*/
