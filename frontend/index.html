@@ -31,8 +31,6 @@
     <button class="tab" data-tab="expenses">Expenses</button>
     <button class="tab" data-tab="receipts">Maintenance Receipts</button>
     <button class="tab" data-tab="announcements">Announcements</button>
-    
-
   </nav>
 
   <main class="content">
@@ -44,6 +42,11 @@
         <p><strong>Address:</strong> Plot No 7, Karol Bagh Rd, Kalyan Sampat Orchid, Bharwsala, Indore, MP - 453555</p>
         <p>This portal helps our society maintain records for flat owners, track monthly maintenance receipts, log expenses (salary, fuel, miscellaneous), and share announcements. <br>
         Admin can log in using the default credentials to manage all data. Residents can view information without logging in.</p>
+      </div>
+
+      <div class="card">
+        <h3>Society QR Code</h3>
+        <div id="main-qr"></div>
       </div>
 
       <div class="grid-2">
@@ -279,83 +282,54 @@
   <!-- Login Modal -->
   <dialog id="loginModal" class="modal">
     <form method="dialog" id="loginForm" class="modal-card">
-      <h3>Admin Login</h3>
+      <h3>Login</h3>
       <label>Username
-        <input class="input" id="username" placeholder="admin" required/>
+        <input class="input" id="username" placeholder="admin or flat no (e.g., A-101)" required/>
       </label>
       <label>Password
-        <input class="input" id="password" type="password" placeholder="admin" required/>
+        <input class="input" id="password" type="password" placeholder="admin or flat no" required/>
       </label>
       <div class="modal-actions">
         <button class="btn" id="loginSubmit">Login</button>
         <button class="btn btn-outline" value="cancel">Cancel</button>
       </div>
-      <p class="muted">Default credentials: <strong>admin / admin</strong>. For demo use only.</p>
+      <p class="muted">Admin: <strong>admin / admin</strong>. Owner: Use flat no as username and password (OTP required).</p>
     </form>
   </dialog>
-  <!-- Complaints (NEW) -->
-<section id="complaints" class="tab-panel">
-  <div class="card">
-    <div class="flex-between">
-      <h2>Register a Complaint</h2>
-      <div class="muted">Residents can raise complaints. Admin can view/ack/close.</div>
-    </div>
-
-    <!-- Form -->
-    <div class="mt-2">
-      <form id="complaintForm" class="grid-4 admin-or-owner">
-        <input class="input" name="flatNo" id="complaintFlatNo" placeholder="Flat No" required />
-        <input class="input" name="ownerName" id="complaintOwnerName" placeholder="Owner Name" required />
-        <textarea class="input" name="body" id="complaintBody" rows="3" placeholder="Write your complaint..." required></textarea>
-        <div>
-          <label><input type="checkbox" id="complaintPublic" /> Make this complaint visible to all owners (Public)</label>
-        </div>
-        <div class="grid-2">
-          <div>
-            <label>Date/Time (auto)</label>
-            <input class="text" id="complaintDate" name="date" readonly />
-          </div>
-          <div>
-            <label>&nbsp;</label>
-            <button class="btn" type="submit">Submit Complaint</button>
-          </div>
-        </div>
-      </form>
-    </div>
-
-    <hr />
-
-    <div class="flex-between">
-      <h3>All Complaints</h3>
-      <div>
-        <select id="complaintFilter" class="input">
-          <option value="all">All</option>
-          <option value="open">Open</option>
-          <option value="ack">Acknowledged</option>
-          <option value="closed">Closed</option>
-          <option value="mine">My Complaints</option>
-          <option value="public">Public Only</option>
-        </select>
-        <button id="refreshComplaints" class="btn btn-outline">Refresh</button>
-      </div>
-    </div>
-
-    <div id="complaintsList" class="mt-2"></div>
-
-  </div>
-</section>
-
 
   <footer class="app-footer">
     <p>© <span id="year"></span> Mangla Landmark society.</p>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+  <script src="config.js"></script>
   <script src="script.js"></script>
   <script src="balance.js"></script>
-  <script src="complaints.js"></script>
-
+  
+  <!-- OTP Modal -->
+  <dialog id="otpModal" class="modal">
+    <div class="modal-card">
+      <h3>Verify Flat Owner Access</h3>
+      <p>Enter your flat number to receive an OTP via email.</p>
+      <label>Flat Number
+        <input class="input" id="otpFlatNo" placeholder="e.g., A-101" required/>
+      </label>
+      <div id="otpStep1" class="mt-2">
+        <button class="btn" id="sendOtpBtn">Send OTP</button>
+      </div>
+      <div id="otpStep2" class="mt-2 hidden">
+        <p>OTP sent to your email. Enter the 5-digit code:</p>
+        <input class="input" id="otpCode" placeholder="Enter OTP" maxlength="5" required/>
+        <div class="modal-actions">
+          <button class="btn" id="verifyOtpBtn">Verify</button>
+          <button class="btn btn-outline" id="resendOtpBtn">Resend OTP</button>
+        </div>
+        <p id="otpMessage" class="muted"></p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" value="cancel">Cancel</button>
+      </div>
+    </div>
+  </dialog>
 </body>
 </html>
-
-
-
