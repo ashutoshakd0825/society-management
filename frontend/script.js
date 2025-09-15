@@ -1,7 +1,6 @@
 // ===== Backend API URL =====
-//const API_URL = "http://localhost:5000/api";
-// 👆 yahan apna Render backend ka URL daalo
-const API_URL = "https://society-management-etd8.onrender.com/api"; 
+// API_URL is defined in config.js
+// For production, update config.js with the production URL
 // ===== Utility =====
 const $ = sel => document.querySelector(sel);
 const $$ = sel => Array.from(document.querySelectorAll(sel));
@@ -38,61 +37,318 @@ function setRole(role) {
   $$('.admin-only').forEach(el => el.style.display = isAdmin ? '' : 'none');
   $('#loginBtn').classList.toggle('hidden', isAdmin);
   $('#logoutBtn').classList.toggle('hidden', !isAdmin);
+
+  // Hide/show tabs based on role
+  const ownersTab = document.querySelector('[data-tab="owners"]');
+  const expensesTab = document.querySelector('[data-tab="expenses"]');
+  const receiptsTab = document.querySelector('[data-tab="receipts"]');
+  const announcementsTab = document.querySelector('[data-tab="announcements"]');
+
+  if (role === 'Admin' || role === 'Owner') {
+    ownersTab.style.display = '';
+    expensesTab.style.display = '';
+    receiptsTab.style.display = '';
+    announcementsTab.style.display = '';
+  } else {
+    ownersTab.style.display = 'none';
+    expensesTab.style.display = 'none';
+    receiptsTab.style.display = 'none';
+    announcementsTab.style.display = 'none';
+  }
 }
 
 function getRole() {
   return localStorage.getItem("ml_role") || 'Guest';
 }
 
+function setOtpVerified(verified) {
+  localStorage.setItem("ml_otp_verified", verified);
+}
+
+function getOtpVerified() {
+  return localStorage.getItem("ml_otp_verified") === "true";
+}
+
+// ===== Backend API URL =====
+
+
+
+
 // ===== Tabs =====
+
+// New: Intercept tab clicks to enforce OTP authentication for Owners
 $$('.tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    $$('.tab').forEach(b=>b.classList.remove('active'));
+  btn.addEventListener('click', async (e) => {
+    if (CURRENT_USER.role === 'Owner' && !CURRENT_USER.otpVerified) {
+      e.preventDefault();
+      // Show OTP modal
+      $('#otpModal').showModal();
+      // Set flatNo in OTP modal input
+      $('#otpFlatNo').value = CURRENT_USER.flatNo || '';
+      // Reset OTP modal UI
+      otpStep1.classList.remove('hidden');
+      otpStep2.classList.add('hidden');
+      otpMessage.textContent = '';
+      otpCode.value = '';
+      // Do not switch tab content until verified
+      return;
+    }
+    // If verified or not Owner, proceed with tab switch
+    $$('.tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const tab = btn.dataset.tab;
-    $$('.tab-panel').forEach(p=>p.classList.remove('active'));
+    $$('.tab-panel').forEach(p => p.classList.remove('active'));
     $('#' + tab).classList.add('active');
   });
 });
 
-// ===== Login Modal =====
-const loginModal = $('#loginModal');
-$('#loginBtn').addEventListener('click', ()=> loginModal.showModal());
-$('#logoutBtn').addEventListener('click', ()=> setRole('Guest'));
-$('#loginSubmit').addEventListener('click', (e)=>{
+// ================== Global User Object ==================
+window.CURRENT_USER = {
+  role: "Guest",   // Guest / Admin / Owner
+  flatNo: "",      // only if Owner
+  otpVerified: getOtpVerified()
+};
+
+// ================== Utility Functions ==================
+
+// ================== Login / Logout ==================
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const loginModal = document.getElementById("loginModal");
+const loginForm = document.getElementById("loginForm");
+const roleBadge = document.getElementById("roleBadge");
+
+// ---- Open login modal ----
+loginBtn.addEventListener("click", () => {
+  loginModal.showModal();
+});
+
+// ---- Handle login ----
+loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
-  const u = $('#username').value.trim();
-  const p = $('#password').value.trim();
-  if(u==='admin' && p==='admin') {
-    setRole('Admin');
-    loginModal.close();
-  } else {
-    alert('Invalid credentials');
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+
+  // ---- Admin Login ----
+  if (username.toLowerCase() === "admin" && password.toLowerCase() === "admin") {
+    CURRENT_USER.role = "Admin";
+    CURRENT_USER.flatNo = "";
+    setRole("Admin");
+    alert("✅ Logged in as Admin");
+  }
+  // ---- Owner Login (for demo, use flatNo as username and password) ----
+  else if (username && password && username.toLowerCase() === password.toLowerCase()) {
+    CURRENT_USER.role = "Owner";
+    CURRENT_USER.flatNo = username.toUpperCase(); // e.g., A-101
+    CURRENT_USER.otpVerified = false;
+    setOtpVerified(false);
+    // Fetch owner data to get name
+    try {
+      const owners = await readRemote("owners");
+      const owner = owners.find(o => o.flatno === CURRENT_USER.flatNo);
+      if (owner) {
+        CURRENT_USER.name = owner.name;
+      }
+    } catch (error) {
+      console.error("Error fetching owner data:", error);
+    }
+    setRole("Owner");
+    alert(`✅ Logged in as Owner (${CURRENT_USER.flatNo})`);
+  }
+  // ---- Invalid ----
+  else {
+    alert("❌ Invalid credentials");
+    return;
+  }
+
+  loginModal.close();
+  loginBtn.classList.add("hidden");
+  logoutBtn.classList.remove("hidden");
+
+  // Refresh all data after login
+  renderAll();
+
+  // If Owner, reset OTP verification and show OTP modal
+  if (CURRENT_USER.role === "Owner") {
+    CURRENT_USER.otpVerified = false;
+    $('#otpFlatNo').value = CURRENT_USER.flatNo;
+    $('#otpModal').showModal();
   }
 });
 
+// ---- Logout ----
+logoutBtn.addEventListener("click", () => {
+  CURRENT_USER.role = "Guest";
+  CURRENT_USER.flatNo = "";
+  CURRENT_USER.otpVerified = false;
+  setOtpVerified(false);
+  setRole('Guest');
+  alert("🚪 Logged out");
+
+  // Refresh complaints after logout
+  if (typeof renderComplaints === "function") {
+    renderComplaints();
+  }
+});
+
+// ================== OTP Modal ==================
+const otpModal = document.getElementById("otpModal");
+const otpStep1 = document.getElementById("otpStep1");
+const otpStep2 = document.getElementById("otpStep2");
+const otpFlatNo = document.getElementById("otpFlatNo");
+const otpCode = document.getElementById("otpCode");
+const sendOtpBtn = document.getElementById("sendOtpBtn");
+const verifyOtpBtn = document.getElementById("verifyOtpBtn");
+const resendOtpBtn = document.getElementById("resendOtpBtn");
+const otpMessage = document.getElementById("otpMessage");
+
+let otpCooldown = 0;
+let otpTimer;
+
+// ---- Send OTP ----
+sendOtpBtn.addEventListener("click", async () => {
+  const flatNo = otpFlatNo.value.trim().toUpperCase();
+  if (!flatNo) {
+    otpMessage.textContent = "Please enter your flat number.";
+    otpMessage.style.color = "red";
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/send-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ flatNo })
+    });
+    const result = await response.json();
+
+    if (response.ok) {
+      otpMessage.textContent = "OTP sent to your registered contact.";
+      otpMessage.style.color = "green";
+      otpStep1.classList.add("hidden");
+      otpStep2.classList.remove("hidden");
+      startOtpCooldown();
+    } else {
+      otpMessage.textContent = result.message || "Failed to send OTP.";
+      otpMessage.style.color = "red";
+    }
+  } catch (error) {
+    otpMessage.textContent = "Error sending OTP. Please try again.";
+    otpMessage.style.color = "red";
+  }
+});
+
+// ---- Verify OTP ----
+verifyOtpBtn.addEventListener("click", async () => {
+  const flatNo = otpFlatNo.value.trim().toUpperCase();
+  const code = otpCode.value.trim();
+
+  if (!code) {
+    otpMessage.textContent = "Please enter the OTP.";
+    otpMessage.style.color = "red";
+    return;
+  }
+
+  try {
+    const response = await fetch(`${API_URL}/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ flatNo, otp: code })
+    });
+    const result = await response.json();
+
+    if (response.ok) {
+      CURRENT_USER.otpVerified = true;
+      setOtpVerified(true);
+      otpMessage.textContent = "OTP verified successfully!";
+      otpMessage.style.color = "green";
+      setTimeout(() => {
+        otpModal.close();
+        renderAll();
+      }, 1000);
+    } else {
+      otpMessage.textContent = result.message || "Invalid OTP.";
+      otpMessage.style.color = "red";
+    }
+  } catch (error) {
+    otpMessage.textContent = "Error verifying OTP. Please try again.";
+    otpMessage.style.color = "red";
+  }
+});
+
+// ---- Resend OTP ----
+resendOtpBtn.addEventListener("click", () => {
+  if (otpCooldown > 0) return;
+  sendOtpBtn.click();
+});
+
+// ---- OTP Cooldown Timer ----
+function startOtpCooldown() {
+  otpCooldown = 60;
+  resendOtpBtn.disabled = true;
+  resendOtpBtn.textContent = `Resend in ${otpCooldown}s`;
+
+  otpTimer = setInterval(() => {
+    otpCooldown--;
+    resendOtpBtn.textContent = `Resend in ${otpCooldown}s`;
+
+    if (otpCooldown <= 0) {
+      clearInterval(otpTimer);
+      resendOtpBtn.disabled = false;
+      resendOtpBtn.textContent = "Resend OTP";
+    }
+  }, 1000);
+}
+
+// ---- Reset OTP Modal on Close ----
+otpModal.addEventListener("close", () => {
+  otpStep1.classList.remove("hidden");
+  otpStep2.classList.add("hidden");
+  otpFlatNo.value = "";
+  otpCode.value = "";
+  otpMessage.textContent = "";
+  clearInterval(otpTimer);
+  otpCooldown = 0;
+  resendOtpBtn.disabled = false;
+  resendOtpBtn.textContent = "Resend OTP";
+});
+
+// ================== Misc UI ==================
+
+// Update footer year
+document.getElementById("year").innerText = new Date().getFullYear();
+
 // ===== Owners =====
 async function renderOwners() {
+  if (CURRENT_USER.role === "Guest") {
+    const body = $('#ownerTable tbody');
+    body.innerHTML = '<tr><td colspan="7" style="text-align:center; color: #888;">Please login and verify OTP to view owner details.</td></tr>';
+    $('#statFlats').textContent = 'N/A';
+    return;
+  }
+  if (CURRENT_USER.role === "Owner" && !CURRENT_USER.otpVerified) {
+    $('#otpModal').showModal();
+    return;
+  }
   const q = $('#ownerSearch').value.trim().toLowerCase();
   const data = await readRemote("owners");
   const body = $('#ownerTable tbody');
   body.innerHTML = '';
   data
-    .filter(o => !q || [o.flatNo,o.name,o.contact].some(v=> String(v).toLowerCase().includes(q)))
+    .filter(o => !q || [o.flatno,o.name,o.contact].some(v=> String(v).toLowerCase().includes(q)))
     .forEach((o, idx) => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${o.flatno || o.flatNo}</td>
+        <td>${o.flatno}</td>
         <td>${o.name}</td>
         <td>${o.contact}</td>
-        <td>${o.email || ''}</td>         <!-- Add this line -->
+        <td>${o.email || ''}</td>
         <td>${o.sqft}</td>
         <td>${o.parking}</td>
         <td class="admin-only">
-          <div class="table-actions">
-            <button class="action danger" data-del="${o.id}">Delete</button>
-          </div>
-        </td>`;
+          <button class="btn btn-danger" data-del="${o.id}">Delete</button>
+        </td>
+      `;
       body.appendChild(tr);
     });
   const isAdmin = getRole()==='Admin';
@@ -117,7 +373,7 @@ $('#ownerForm').addEventListener('submit', async (e)=>{
     flatNo: f.flatNo.value.trim(),
     name: f.name.value.trim(),
     contact: f.contact.value.trim(),
-     email: f.email.value.trim(),  // ✅ Added line
+    email: f.email.value.trim(),
     sqft: Number(f.sqft.value||0),
     parking: f.parking.value.trim()
   };
@@ -138,6 +394,16 @@ function yearOptions(sel) {
   sel.innerHTML = opts;
 }
 async function renderExpenses() {
+  if (CURRENT_USER.role === "Guest") {
+    const body = $('#expenseTable tbody');
+    body.innerHTML = '<tr><td colspan="5" style="text-align:center; color: #888;">Please login to view expense details.</td></tr>';
+    $('#totalSalary').textContent = 'N/A';
+    $('#totalFuel').textContent = 'N/A';
+    $('#totalMisc').textContent = 'N/A';
+    $('#totalExpenses').textContent = 'N/A';
+    $('#statExpenses').textContent = 'N/A';
+    return;
+  }
   const data = await readRemote("expenses");
   const m = Number($('#expenseMonth').value || 0);
   const y = Number($('#expenseYear').value || 0);
@@ -225,6 +491,12 @@ async function generateReceiptId() {
 }
 
 async function renderReceipts() {
+  if (CURRENT_USER.role === "Guest") {
+    const body = $('#receiptTable tbody');
+    body.innerHTML = '<tr><td colspan="9" style="text-align:center; color: #888;">Please login to view receipt details.</td></tr>';
+    $('#statReceipts').textContent = 'N/A';
+    return;
+  }
   const q = $('#receiptSearch').value.trim().toLowerCase();
   const data = await readRemote("receipts");
   const body = $('#receiptTable tbody');
@@ -387,6 +659,11 @@ function openPrintReceipt(r) {
 
 // ===== Announcements =====
 async function renderAnnouncements() {
+  if (CURRENT_USER.role === "Guest") {
+    const box = $('#announceList');
+    box.innerHTML = '<div style="text-align:center; color: #888; padding: 20px;">Please login to view announcements.</div>';
+    return;
+  }
   const data = (await readRemote("announcements")).sort((a,b)=> new Date(b.date)-new Date(a.date));
   const box = $('#announceList');
   box.innerHTML = '';
@@ -424,7 +701,11 @@ async function renderAll() {
   await renderExpenses();
   await renderReceipts();
   await renderAnnouncements();
+  if (typeof renderComplaints === "function") {
+    await renderComplaints();
+  }
 }
+
 
 (function init(){
   setRole(getRole());
@@ -432,8 +713,17 @@ async function renderAll() {
   yearOptions($('#expenseYear'));
   $('#year').textContent = new Date().getFullYear();
   renderAll();
+
+  // Generate main QR code
+  const qrCanvas = document.createElement('canvas');
+  $('#main-qr').appendChild(qrCanvas);
+  QRCode.toCanvas(qrCanvas, window.location.href, {
+    width: 150,
+    height: 150,
+    logo: {
+      src: 'https://via.placeholder.com/30x30?text=🏢',
+      width: 30,
+      height: 30
+    }
+  });
 })();
-
-
-
-
