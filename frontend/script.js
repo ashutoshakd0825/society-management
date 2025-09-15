@@ -77,28 +77,30 @@ function getOtpVerified() {
 // ===== Tabs =====
 
 // New: Intercept tab clicks to enforce OTP authentication for Owners
-$$('.tab').forEach(btn => {
-  btn.addEventListener('click', async (e) => {
-    if (CURRENT_USER.role === 'Owner' && !CURRENT_USER.otpVerified) {
-      e.preventDefault();
-      // Show OTP modal
-      $('#otpModal').showModal();
-      // Set flatNo in OTP modal input
-      $('#otpFlatNo').value = CURRENT_USER.flatNo || '';
-      // Reset OTP modal UI
-      otpStep1.classList.remove('hidden');
-      otpStep2.classList.add('hidden');
-      otpMessage.textContent = '';
-      otpCode.value = '';
-      // Do not switch tab content until verified
-      return;
-    }
-    // If verified or not Owner, proceed with tab switch
-    $$('.tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const tab = btn.dataset.tab;
-    $$('.tab-panel').forEach(p => p.classList.remove('active'));
-    $('#' + tab).classList.add('active');
+document.addEventListener("DOMContentLoaded", () => {
+  $$('.tab').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      if (CURRENT_USER.role === 'Owner' && !CURRENT_USER.otpVerified) {
+        e.preventDefault();
+        // Show OTP modal
+        $('#otpModal').showModal();
+        // Set flatNo in OTP modal input
+        $('#otpFlatNo').value = CURRENT_USER.flatNo || '';
+        // Reset OTP modal UI
+        otpStep1.classList.remove('hidden');
+        otpStep2.classList.add('hidden');
+        otpMessage.textContent = '';
+        otpCode.value = '';
+        // Do not switch tab content until verified
+        return;
+      }
+      // If verified or not Owner, proceed with tab switch
+      $$('.tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const tab = btn.dataset.tab;
+      $$('.tab-panel').forEach(p => p.classList.remove('active'));
+      $('#' + tab).classList.add('active');
+    });
   });
 });
 
@@ -119,76 +121,122 @@ const loginForm = document.getElementById("loginForm");
 const roleBadge = document.getElementById("roleBadge");
 
 // ---- Open login modal ----
-loginBtn.addEventListener("click", () => {
-  loginModal.showModal();
-});
+document.addEventListener("DOMContentLoaded", () => {
+  loginBtn.addEventListener("click", () => {
+    loginModal.showModal();
+  });
 
-// ---- Handle login ----
-loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const username = document.getElementById("username").value.trim();
-  const password = document.getElementById("password").value.trim();
+  // ---- Handle login ----
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-  // ---- Admin Login ----
-  if (username.toLowerCase() === "admin" && password.toLowerCase() === "admin") {
-    CURRENT_USER.role = "Admin";
+    // ---- Admin Login ----
+    if (username.toLowerCase() === "admin" && password.toLowerCase() === "admin") {
+      CURRENT_USER.role = "Admin";
+      CURRENT_USER.flatNo = "";
+      setRole("Admin");
+      alert("✅ Logged in as Admin");
+    }
+    // ---- Owner Login (for demo, use flatNo as username and password) ----
+    else if (username && password && username.toLowerCase() === password.toLowerCase()) {
+      CURRENT_USER.role = "Owner";
+      CURRENT_USER.flatNo = username.toUpperCase(); // e.g., A-101
+      CURRENT_USER.otpVerified = false;
+      setOtpVerified(false);
+      // Fetch owner data to get name
+      try {
+        const owners = await readRemote("owners");
+        const owner = owners.find(o => o.flatno === CURRENT_USER.flatNo);
+        if (owner) {
+          CURRENT_USER.name = owner.name;
+        }
+      } catch (error) {
+        console.error("Error fetching owner data:", error);
+      }
+      setRole("Owner");
+      alert(`✅ Logged in as Owner (${CURRENT_USER.flatNo})`);
+    }
+    // ---- Invalid ----
+    else {
+      alert("❌ Invalid credentials");
+      return;
+    }
+
+    loginModal.close();
+    loginBtn.classList.add("hidden");
+    logoutBtn.classList.remove("hidden");
+
+    // Refresh all data after login
+    renderAll();
+
+    // If Owner, reset OTP verification and show OTP modal
+    if (CURRENT_USER.role === "Owner") {
+      CURRENT_USER.otpVerified = false;
+      $('#otpFlatNo').value = CURRENT_USER.flatNo;
+      $('#otpModal').showModal();
+    }
+  });
+
+  // ---- Logout ----
+  logoutBtn.addEventListener("click", () => {
+    CURRENT_USER.role = "Guest";
     CURRENT_USER.flatNo = "";
-    setRole("Admin");
-    alert("✅ Logged in as Admin");
-  }
-  // ---- Owner Login (for demo, use flatNo as username and password) ----
-  else if (username && password && username.toLowerCase() === password.toLowerCase()) {
-    CURRENT_USER.role = "Owner";
-    CURRENT_USER.flatNo = username.toUpperCase(); // e.g., A-101
     CURRENT_USER.otpVerified = false;
     setOtpVerified(false);
-    // Fetch owner data to get name
+    setRole('Guest');
+    alert("🚪 Logged out");
+
+    // Refresh complaints after logout
+    if (typeof renderComplaints === "function") {
+      renderComplaints();
+    }
+  });
+
+  // ---- Resend OTP ----
+  resendOtpBtn.addEventListener("click", () => {
+    if (otpCooldown > 0) return;
+    sendOtpBtn.click();
+  });
+
+  // ---- Verify OTP ----
+  verifyOtpBtn.addEventListener("click", async () => {
+    const flatNo = otpFlatNo.value.trim().toUpperCase();
+    const code = otpCode.value.trim();
+
+    if (!code) {
+      otpMessage.textContent = "Please enter the OTP.";
+      otpMessage.style.color = "red";
+      return;
+    }
+
     try {
-      const owners = await readRemote("owners");
-      const owner = owners.find(o => o.flatno === CURRENT_USER.flatNo);
-      if (owner) {
-        CURRENT_USER.name = owner.name;
+      const response = await fetch(`${API_URL}/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ flatNo, otp: code })
+      });
+      const result = await response.json();
+
+      if (response.ok) {
+        CURRENT_USER.otpVerified = true;
+        setOtpVerified(true);
+        otpMessage.textContent = "OTP verified successfully!";
+        otpMessage.style.color = "green";
+        setTimeout(() => {
+          otpModal.close();
+          renderAll();
+        }, 1000);
+      } else {
+        otpMessage.textContent = result.message || "Invalid OTP.";
+        otpMessage.style.color = "red";
       }
     } catch (error) {
-      console.error("Error fetching owner data:", error);
+      otpMessage.textContent = "Error verifying OTP. Please try again.";
+      otpMessage.style.color = "red";
     }
-    setRole("Owner");
-    alert(`✅ Logged in as Owner (${CURRENT_USER.flatNo})`);
-  }
-  // ---- Invalid ----
-  else {
-    alert("❌ Invalid credentials");
-    return;
-  }
-
-  loginModal.close();
-  loginBtn.classList.add("hidden");
-  logoutBtn.classList.remove("hidden");
-
-  // Refresh all data after login
-  renderAll();
-
-  // If Owner, reset OTP verification and show OTP modal
-  if (CURRENT_USER.role === "Owner") {
-    CURRENT_USER.otpVerified = false;
-    $('#otpFlatNo').value = CURRENT_USER.flatNo;
-    $('#otpModal').showModal();
-  }
-});
-
-// ---- Logout ----
-logoutBtn.addEventListener("click", () => {
-  CURRENT_USER.role = "Guest";
-  CURRENT_USER.flatNo = "";
-  CURRENT_USER.otpVerified = false;
-  setOtpVerified(false);
-  setRole('Guest');
-  alert("🚪 Logged out");
-
-  // Refresh complaints after logout
-  if (typeof renderComplaints === "function") {
-    renderComplaints();
-  }
+  });
 });
 
 // ================== OTP Modal ==================
@@ -206,36 +254,44 @@ let otpCooldown = 0;
 let otpTimer;
 
 // ---- Send OTP ----
-sendOtpBtn.addEventListener("click", async () => {
-  const flatNo = otpFlatNo.value.trim().toUpperCase();
-  if (!flatNo) {
-    otpMessage.textContent = "Please enter your flat number.";
-    otpMessage.style.color = "red";
-    return;
-  }
+document.addEventListener("DOMContentLoaded", () => {
+  const sendOtpBtn = document.getElementById("sendOtpBtn");
+  const otpFlatNo = document.getElementById("otpFlatNo");
+  const otpMessage = document.getElementById("otpMessage");
+  const otpStep1 = document.getElementById("otpStep1");
+  const otpStep2 = document.getElementById("otpStep2");
 
-  try {
-    const response = await fetch(`${API_URL}/send-otp`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ flatNo })
-    });
-    const result = await response.json();
+  sendOtpBtn.addEventListener("click", async () => {
+    const flatNo = otpFlatNo.value.trim().toUpperCase();
+    if (!flatNo) {
+      otpMessage.textContent = "Please enter your flat number.";
+      otpMessage.style.color = "red";
+      return;
+    }
 
-    if (response.ok) {
-      otpMessage.textContent = "OTP sent to your registered contact.";
-      otpMessage.style.color = "green";
-      otpStep1.classList.add("hidden");
-      otpStep2.classList.remove("hidden");
-      startOtpCooldown();
-    } else {
-      otpMessage.textContent = result.message || "Failed to send OTP.";
+    try {
+      const response = await fetch(`${API_URL}/send-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ flatNo })
+      });
+      const result = await response.json();
+
+      if (response.ok) {
+        otpMessage.textContent = "OTP sent to your registered contact.";
+        otpMessage.style.color = "green";
+        otpStep1.classList.add("hidden");
+        otpStep2.classList.remove("hidden");
+        startOtpCooldown();
+      } else {
+        otpMessage.textContent = result.message || "Failed to send OTP.";
+        otpMessage.style.color = "red";
+      }
+    } catch (error) {
+      otpMessage.textContent = "Error sending OTP. Please try again.";
       otpMessage.style.color = "red";
     }
-  } catch (error) {
-    otpMessage.textContent = "Error sending OTP. Please try again.";
-    otpMessage.style.color = "red";
-  }
+  });
 });
 
 // ---- Verify OTP ----
