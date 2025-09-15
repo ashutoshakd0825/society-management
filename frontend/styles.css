@@ -24,7 +24,7 @@ html,body {
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:16px 20px;
+  padding:20px 24px;
   border-bottom:1px solid var(--border);
   position:sticky;
   top:0;
@@ -33,7 +33,7 @@ html,body {
   z-index:10;
 }
 
-.brand{display:flex;gap:12px;align-items:center}
+.brand{display:flex;gap:16px;align-items:center}
 .logo{font-size:28px}
 h1{margin:0;font-size:20px;font-weight:600}
 .muted{color:var(--muted);font-size:13px}
@@ -44,7 +44,7 @@ h1{margin:0;font-size:20px;font-weight:600}
   padding:6px 10px;
   border-radius:999px;
   font-size:12px;
-  margin-right:8px
+  margin-right:12px
 }
 
 .btn{
@@ -64,20 +64,29 @@ h1{margin:0;font-size:20px;font-weight:600}
 
 .tabs{
   display:flex;
-  gap:8px;
-  padding:10px 16px;
+  gap:16px;
+  padding:12px 20px;
   border-bottom:1px solid var(--border);
-  flex-wrap:wrap
+  flex-wrap:wrap;
+  justify-content: center;
 }
 .tab{
   background:#f9fafb;
   border:1px solid var(--border);
   color:var(--text);
-  padding:8px 12px;
+  padding:10px 16px;
   border-radius:10px;
-  cursor:pointer
+  cursor:pointer;
+  font-weight:500;
+  transition: all 0.2s ease;
 }
-.tab.active{outline:2px solid var(--accent)}
+.tab:hover{
+  background:#f0f0f0;
+}
+.tab.active{
+  outline:2px solid #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
 
 .content{padding:20px;max-width:1200px;margin:0 auto}
 .tab-panel{display:none}
@@ -89,15 +98,15 @@ h1{margin:0;font-size:20px;font-weight:600}
   background:white;
   border:1px solid var(--border);
   border-radius:16px;
-  padding:16px;
-  margin-bottom:16px;
+  padding:20px;
+  margin-bottom:20px;
   box-shadow:0 10px 25px rgba(0,0,0,.1)
 }
 
 .grid-2{display:grid;grid-template-columns:1fr;gap:16px}
-.grid-3{display:grid;grid-template-columns:1.4fr .8fr .4fr;gap:8px}
-.grid-5{display:grid;grid-template-columns:1fr 1fr 1fr 1fr .6fr;gap:8px}
-.grid-6{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.grid-3{display:grid;grid-template-columns:1.4fr .8fr .4fr;gap:12px}
+.grid-5{display:grid;grid-template-columns:1fr 1fr 1fr 1fr .6fr;gap:12px}
+.grid-6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
 @media(min-width:900px){.grid-2{grid-template-columns:1fr 1fr}}
 
 .input{
@@ -111,17 +120,17 @@ h1{margin:0;font-size:20px;font-weight:600}
 
 .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:12px}
 table{width:100%;border-collapse:collapse;font-size:14px;background:white}
-th,td{padding:10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
+th,td{padding:12px;border-bottom:1px solid var(--border);text-align:left;vertical-align:top}
 tr:hover{background:#f3f4f6}
 
-.flex-between{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.flex-between{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .mt-2{margin-top:12px}
 
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 .stat-number{display:block;font-size:24px;font-weight:700}
 .stat-label{display:block;color:var(--muted);font-size:12px}
 
-.announcements{display:grid;gap:10px}
+.announcements{display:grid;gap:16px}
 .announcement{
   border:1px solid var(--border);
   border-radius:12px;
@@ -149,10 +158,10 @@ tr:hover{background:#f3f4f6}
   border-radius:16px
 }
 .modal-card h3{margin-top:0}
-.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:8px}
+.modal-actions{display:flex;gap:12px;justify-content:flex-end;margin-top:8px}
 
 /* Actions column buttons */
-.table-actions{display:flex;gap:6px}
+.table-actions{display:flex;gap:8px}
 .action{
   background:transparent;
   border:1px solid var(--border);
@@ -223,7 +232,7 @@ tr:hover{background:#f3f4f6}
   border-radius: 12px;
   padding: 12px;
   background: #f9fafb;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .complaint .meta {
   font-size: 12px;
@@ -236,12 +245,12 @@ tr:hover{background:#f3f4f6}
 }
 .complaint .actions {
   display: flex;
-  gap: 8px;
+  gap: 12px;
 }
 .grid-4 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
+  gap: 12px;
 }
 .status {
   display: inline-block;
@@ -260,7 +269,6 @@ tr:hover{background:#f3f4f6}
   .app-header, .tabs, .app-footer, .btn, .action { display: none !important; }
   .receipt-box { border: none; box-shadow: none; margin: 0; }
 }
-
 /* About tab */
 .tab[data-tab="about"] {
   background: linear-gradient(135deg, #06b6d4, #3b82f6);
