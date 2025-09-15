@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
+const nodemailer = require("nodemailer");
 require('./scheduler'); // ensures scheduler runs when server starts
 
 const app = express();
@@ -10,84 +11,112 @@ app.use(cors());
 app.use(express.json());
 
 // ===== Database Connection =====
+const isProduction = !!process.env.DATABASE_URL;
+
 const pool = new Pool({
   connectionString:
     process.env.DATABASE_URL ||
-    "postgresql://mangla_landmark_db_user:JmRg71RdnCpKHnRMK7mvADnucUbhAW9Z@dpg-d2tcj17diees7384j7mg-a/mangla_landmark_db",
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+    "postgresql://mangla_landmark_db_user:JmRg71RdnCpKHnRMK7mvADnucUbhAW9Z@dpg-d2tcj17diees7384j7mg-a.oregon-postgres.render.com/mangla_landmark_db",
+  ssl: { rejectUnauthorized: false }
 });
 
-// ===== Create Tables if not exist =====
-async function initDB() {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS owners (
-        id SERIAL PRIMARY KEY,
-        flatNo TEXT,
-        name TEXT,
-        contact TEXT,
-        sqft INT,
-        parking TEXT,
-        email TEXT
-      );
-      CREATE TABLE IF NOT EXISTS expenses (
-        id SERIAL PRIMARY KEY,
-        category TEXT,
-        amount NUMERIC,
-        date TEXT,
-        note TEXT
-      );
-      CREATE TABLE IF NOT EXISTS receipts (
-        id SERIAL PRIMARY KEY,
-        receiptId TEXT,
-        date TEXT,
-        flatNo TEXT,
-        name TEXT,
-        month TEXT,
-        mode TEXT,
-        txnId TEXT,
-        amount NUMERIC
-      );
-      CREATE TABLE IF NOT EXISTS announcements (
-        id SERIAL PRIMARY KEY,
-        title TEXT,
-        body TEXT,
-        date TEXT
-      );
-      CREATE TABLE IF NOT EXISTS settings (
-        setting_key TEXT PRIMARY KEY,
-        value TEXT
-      );
-      CREATE TABLE IF NOT EXISTS complaints (
-  id SERIAL PRIMARY KEY,
-  flatNo TEXT,
-  ownerName TEXT,
-  body TEXT,
-  is_public BOOLEAN DEFAULT TRUE,
-  status TEXT DEFAULT 'open',
-  admin_comments TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW()
-  );
-    `);
-    console.log("✅ Tables ensured");
-  } catch (err) {
-    console.error("❌ Error creating tables:", err);
+// const pool = new Pool({
+//   connectionString:
+//     process.env.DATABASE_URL ||
+//     "postgresql://mangla_landmark_db_user:JmRg71RdnCpKHnRMK7mvADnucUbhAW9Z@dpg-d2tcj17diees7384j7mg-a.oregon-postgres.render.com/mangla_landmark_db",
+//      ssl: { rejectUnauthorized: false }
+
+//     // ssl: isProduction ? { rejectUnauthorized: false } : false,
+
+// Nodemailer transporter setup
+let transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.EMAIL_USER || "ashutoshakd123@gmail.com",
+    pass: process.env.EMAIL_PASS || "effv jssg wdel lzvp"
   }
-}
-initDB();
-// ===== Auto-clean complaints older than 2 months (runs daily) =====
-async function cleanupOldComplaints() {
-  try {
-    // delete complaints older than 61 days
-    await pool.query("DELETE FROM complaints WHERE created_at < NOW() - INTERVAL '61 days'");
-    console.log("✅ Old complaints cleanup done");
-  } catch (err) {
-    console.error("Error cleaning complaints:", err);
+});
+
+// ===== Send OTP Endpoint =====
+app.post("/api/send-otp", async (req, res) => {
+  const { flatNo } = req.body;
+  if (!flatNo) {
+    return res.status(400).json({ error: "flatNo is required" });
   }
-}
+
+  try {
+    // Generate 5-digit OTP
+    const otp = Math.floor(10000 + Math.random() * 90000).toString();
+
+    // Set expiry 5 minutes from now
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    // Store OTP in DB
+    await pool.query(
+      "INSERT INTO otps (flatNo, otp, expires_at) VALUES ($1, $2, $3)",
+      [flatNo, otp, expiresAt]
+    );
+
+    // Get owner's email
+    const ownerResult = await pool.query("SELECT email FROM owners WHERE flatNo = $1", [flatNo]);
+    if (ownerResult.rows.length === 0) {
+      return res.status(404).json({ error: "Owner not found" });
+    }
+    const email = ownerResult.rows[0].email;
+    if (!email) {
+      return res.status(400).json({ error: "Owner email not found" });
+    }
+
+    // Send OTP email
+    let info = await transporter.sendMail({
+      from: '"Mangla Landmark" <no-reply@mangla.com>',
+      to: email,
+      subject: "Your OTP for Mangla Landmark Society Portal",
+      text: `Your OTP is ${otp}. It expires in 5 minutes.`,
+      html: `<p>Your OTP is <b>${otp}</b>. It expires in 5 minutes.</p>`
+    });
+
+    console.log("OTP sent: %s", info.messageId);
+
+    res.json({ success: true, message: "OTP sent to email" });
+  } catch (err) {
+    console.error("Error sending OTP:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ===== Verify OTP Endpoint =====
+app.post("/api/verify-otp", async (req, res) => {
+  const { flatNo, otp } = req.body;
+  if (!flatNo || !otp) {
+    return res.status(400).json({ error: "flatNo and otp are required" });
+  }
+
+  try {
+    // Check OTP validity and expiry
+    const result = await pool.query(
+      "SELECT * FROM otps WHERE flatNo = $1 AND otp = $2 AND expires_at > NOW() ORDER BY created_at DESC LIMIT 1",
+      [flatNo, otp]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(400).json({ error: "Invalid or expired OTP" });
+    }
+
+    // Optionally, delete used OTPs for this flatNo
+    await pool.query("DELETE FROM otps WHERE flatNo = $1", [flatNo]);
+
+    res.json({ success: true, message: "OTP verified" });
+  } catch (err) {
+    console.error("Error verifying OTP:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 // ===== Safe Tables =====
-const validTables = ["owners", "expenses", "receipts", "announcements", "complaints"];
+const validTables = ["owners", "expenses", "receipts", "announcements"];
 
 // ===== Test Endpoint =====
 app.get("/api/test", async (req, res) => {
@@ -259,89 +288,8 @@ app.delete("/api/:type/:id", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// ===== Complaints API =====
-// GET complaints (returns public ones + private ones depending on viewerRole/viewerFlat)
-app.get("/api/complaints", async (req, res) => {
-  const { viewerRole = 'Guest', viewerFlat = '' } = req.query;
-  try {
-    // fetch all complaints
-    const result = await pool.query("SELECT * FROM complaints ORDER BY id DESC");
-    const rows = result.rows;
 
-    // filter: public OR (private + owner matches) OR admin
-    const filtered = rows.filter(r => {
-      if (r.is_public) return true;
-      if (viewerRole === 'Admin') return true;
-      if (viewerFlat && String(r.flatno || '').toLowerCase() === String(viewerFlat).toLowerCase()) return true;
-      return false;
-    });
-    res.json(filtered);
-  } catch (err) {
-    console.error("Error fetching complaints:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// POST new complaint
-app.post("/api/complaints", async (req, res) => {
-  const { flatNo, ownerName, body, is_public = true, status = 'open', admin_comments = '', created_at } = req.body;
-  try {
-    const result = await pool.query(
-      `INSERT INTO complaints (flatno, ownername, body, is_public, status, admin_comments, created_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
-      [flatNo, ownerName, body, is_public, status, admin_comments, created_at || new Date().toISOString()]
-    );
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error("Error creating complaint:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// PUT update complaint (admin actions or owner update)
-app.put("/api/complaints/:id", async (req, res) => {
-  const id = req.params.id;
-  const { status, admin_comments } = req.body;
-  try {
-    // update only provided fields
-    const updates = [];
-    const vals = [];
-    let idx = 1;
-    if (status !== undefined) {
-      updates.push(`status = $${idx++}`);
-      vals.push(status);
-    }
-    if (admin_comments !== undefined) {
-      updates.push(`admin_comments = $${idx++}`);
-      vals.push(admin_comments);
-    }
-    if (updates.length === 0) return res.status(400).json({ error: "Nothing to update" });
-    vals.push(id);
-    const q = `UPDATE complaints SET ${updates.join(', ')} WHERE id = $${idx} RETURNING *`;
-    const result = await pool.query(q, vals);
-    res.json(result.rows[0]);
-  } catch (err) {
-    console.error("Error updating complaint:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// DELETE complaint (admin)
-app.delete("/api/complaints/:id", async (req, res) => {
-  const id = req.params.id;
-  try {
-    await pool.query("DELETE FROM complaints WHERE id = $1", [id]);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Error deleting complaint:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
 // ===== Start Server =====
 app.listen(PORT, () =>
   console.log(`✅ Server running on port ${PORT}`)
 );
-
-
-
-
