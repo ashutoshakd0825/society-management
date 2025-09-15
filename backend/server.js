@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const { Pool } = require("pg");
 const nodemailer = require("nodemailer");
+const pool = require("./db");
 require('./scheduler'); // ensures scheduler runs when server starts
 
 const app = express();
@@ -9,24 +9,6 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-
-// ===== Database Connection =====
-const isProduction = !!process.env.DATABASE_URL;
-
-const pool = new Pool({
-  connectionString:
-    process.env.DATABASE_URL ||
-    "postgresql://mangla_landmark_db_user:JmRg71RdnCpKHnRMK7mvADnucUbhAW9Z@dpg-d2tcj17diees7384j7mg-a.oregon-postgres.render.com/mangla_landmark_db",
-  ssl: { rejectUnauthorized: false }
-});
-
-// const pool = new Pool({
-//   connectionString:
-//     process.env.DATABASE_URL ||
-//     "postgresql://mangla_landmark_db_user:JmRg71RdnCpKHnRMK7mvADnucUbhAW9Z@dpg-d2tcj17diees7384j7mg-a.oregon-postgres.render.com/mangla_landmark_db",
-//      ssl: { rejectUnauthorized: false }
-
-//     // ssl: isProduction ? { rejectUnauthorized: false } : false,
 
 // Nodemailer transporter setup
 let transporter = nodemailer.createTransport({
