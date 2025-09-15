@@ -4,7 +4,7 @@ services:
     env: node
     rootDir: backend
     buildCommand: ./render-build.sh
-    startCommand: node scheduler.js
+    startCommand: node server.js
     plan: starter
     region: oregon
     branch: main
