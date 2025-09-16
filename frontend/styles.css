@@ -16,7 +16,7 @@ html,body {
   padding:0;
   height:100%;
   font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif;
-  background-image: url('../img1.jpg');
+  background-image: url('img1.jpg');
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
