@@ -1,12 +1,8 @@
 const { Pool } = require("pg");
-
 const pool = new Pool({
-  connectionString:
-    process.env.DATABASE_URL ||
-    "postgresql://mangla_landmark_db_user:JmRg71RdnCpKHnRMK7mvADnucUbhAW9Z@dpg-d2tcj17diees7384j7mg-a/mangla_landmark_db",
-  ssl: process.env.DATABASE_URL
-    ? { rejectUnauthorized: false } // in production (Render)
-    : false                         // in local dev
+  connectionString: process.env.DATABASE_URL ||
+    "postgresql://neondb_owner:npg_pdHhS1jaR6Nx@ep-dawn-bread-af4yuhpv-pooler.c-2.us-west-2.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
+  ssl: { rejectUnauthorized: false }
 });
-
 module.exports = pool;
+
