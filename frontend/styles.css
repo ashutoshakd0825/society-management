@@ -16,7 +16,7 @@ html,body {
   padding:0;
   height:100%;
   font-family:'Inter',system-ui,Segoe UI,Roboto,Arial,sans-serif;
-  background-image: url('img1.jpg');
+  background-image: url('img2.jpg');
   background-size: cover;
   background-repeat: no-repeat;
   background-attachment: fixed;
@@ -322,4 +322,5 @@ tr:hover{background:#f3f4f6}
   outline: 2px solid #fff;
   box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
+
 
