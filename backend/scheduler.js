@@ -164,7 +164,7 @@ async function sendMonthlyReceipts() {
 /*
 // 🕓 Cron Schedule — Run every 1st of month at 00:01 IST
 //cron.schedule("1 0 1 * *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
-cron.schedule("8 11 24 9 *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
+cron.schedule("14 11 24 9 *", sendMonthlyReceipts, { timezone: "Asia/Kolkata" });
 
 
 // ✅ Uncomment below to test manually
