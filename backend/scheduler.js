@@ -11,14 +11,8 @@ const pool = require("./db");
 
 
 
-// Email transporter
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  }
-});
+// Email transporter using Resend
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Ensure temp directory exists
 const tempDir = path.join(__dirname, 'temp');
@@ -144,14 +138,18 @@ async function sendMonthlyReceipts() {
       await generateStyledPDF(row, pdfPath);
 
       try {
-        const info = await transporter.sendMail({
+        const { data, error } = await resend.emails.send({
           from: process.env.EMAIL_USER,
-          to: row.email,
+          to: [row.email],
           subject: `Maintenance Receipt — ${row.month}`,
-          text: `Dear ${row.name},\n\nPlease find your maintenance receipt attached.\n\nThank you.`,
-          attachments: [{ filename: `receipt_${row.flatno}_${month}.pdf`, path: pdfPath }],
+          html: `<p>Dear ${row.name},</p><p>Please find your maintenance receipt attached.</p><p>Thank you.</p>`,
+          attachments: [{ filename: `receipt_${row.flatno}_${month}.pdf`, content: fs.readFileSync(pdfPath) }],
         });
-        console.log(`✅ Email sent to ${row.email}: ${info.messageId}`);
+        if (error) {
+          console.error(`❌ Failed to send email to ${row.email}:`, error);
+        } else {
+          console.log(`✅ Email sent to ${row.email}: ${data.id}`);
+        }
       } catch (emailErr) {
         console.error(`❌ Failed to send email to ${row.email}:`, emailErr);
       }
