@@ -3,7 +3,7 @@ require('dotenv').config();
 const cron = require("node-cron");
 const fs = require("fs");
 const path = require("path");
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 const { Pool } = require("pg");
 const html_to_pdf = require("html-pdf-node"); // ✅ Replaced puppeteer
 
