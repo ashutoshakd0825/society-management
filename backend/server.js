@@ -1,25 +1,15 @@
 const express = require("express");
 const cors = require("cors");
-const nodemailer = require("nodemailer");
 const pool = require("./db");
 require("./scheduler"); // ensures scheduler runs when server starts
+
+const resend = require("./resendClient");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
-
-// ==================== Nodemailer Setup ====================
-let transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER || "ashutoshakd123@gmail.com",
-    pass: process.env.EMAIL_PASS || "effv jssg wdel lzvp",
-  },
-});
 
 // ==================== Root Endpoint ====================
 app.get("/api", (req, res) => {
@@ -65,15 +55,14 @@ app.post("/api/send-otp", async (req, res) => {
     const email = ownerResult.rows[0].email;
     if (!email) return res.status(400).json({ error: "Owner email not found" });
 
-    let info = await transporter.sendMail({
-      from: '"Mangla Landmark" <no-reply@mangla.com>',
+    await resend.emails.send({
+      from: 'Mangla <no-reply@mangla.com>',
       to: email,
-      subject: "Your OTP for Mangla Landmark Society Portal",
-      text: `Your OTP is ${otp}. It expires in 5 minutes.`,
+      subject: 'Your OTP for Mangla Landmark Society Portal',
       html: `<p>Your OTP is <b>${otp}</b>. It expires in 5 minutes.</p>`,
     });
 
-    console.log("OTP sent: %s", info.messageId);
+    console.log("✅ OTP sent via Resend to:", email);
     res.json({ success: true, message: "OTP sent to email" });
   } catch (err) {
     console.error("Error sending OTP:", err);
@@ -96,7 +85,7 @@ app.post("/api/verify-otp", async (req, res) => {
     if (result.rows.length === 0)
       return res.status(400).json({ error: "Invalid or expired OTP" });
 
-    await pool.query("DELETE FROM otps WHERE flatNo = $1", [flatNo]); // delete used OTPs
+    await pool.query("DELETE FROM otps WHERE flatNo = $1", [flatNo]);
 
     res.json({ success: true, message: "OTP verified" });
   } catch (err) {
