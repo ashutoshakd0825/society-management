@@ -56,7 +56,7 @@ app.post("/api/send-otp", async (req, res) => {
     if (!email) return res.status(400).json({ error: "Owner email not found" });
 
     await resend.emails.send({
-      from: 'Mangla <no-reply@mangla.com>',
+      from: 'Mangla <no-reply@manglalandmarkindore.xyz>',
       to: email,
       subject: 'Your OTP for Mangla Landmark Society Portal',
       html: `<p>Your OTP is <b>${otp}</b>. It expires in 5 minutes.</p>`,
@@ -270,3 +270,4 @@ app.delete("/api/:type/:id", async (req, res) => {
 app.listen(PORT, () =>
   console.log(`✅ Server running on port ${PORT}`)
 );
+
