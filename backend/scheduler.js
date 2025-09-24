@@ -139,7 +139,7 @@ async function sendMonthlyReceipts() {
 
       try {
         const { data, error } = await resend.emails.send({
-          from: process.env.EMAIL_USER,
+          from: 'no-reply@manglalandmark.xyz',
           to: [row.email],
           subject: `Maintenance Receipt — ${row.month}`,
           html: `<p>Dear ${row.name},</p><p>Please find your maintenance receipt attached.</p><p>Thank you.</p>`,
